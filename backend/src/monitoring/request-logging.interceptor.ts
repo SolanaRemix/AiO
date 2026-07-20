@@ -2,6 +2,7 @@ import {
   CallHandler,
   ExecutionContext,
   Injectable,
+  Logger,
   NestInterceptor,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
@@ -10,6 +11,8 @@ import { MonitoringService } from './monitoring.service';
 
 @Injectable()
 export class RequestLoggingInterceptor implements NestInterceptor {
+  private readonly logger = new Logger(RequestLoggingInterceptor.name);
+
   constructor(private readonly monitoringService: MonitoringService) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
@@ -25,13 +28,17 @@ export class RequestLoggingInterceptor implements NestInterceptor {
 
     return next.handle().pipe(
       finalize(() => {
-        void this.monitoringService.recordApiRequest({
-          method: request.method,
-          path: request.originalUrl ?? request.url ?? 'unknown',
-          statusCode: response.statusCode,
-          latencyMs: Date.now() - startedAt,
-          actor: request.user?.email ?? request.user?.id ?? request.user?.sub,
-        });
+        this.monitoringService
+          .recordApiRequest({
+            method: request.method,
+            path: request.originalUrl ?? request.url ?? 'unknown',
+            statusCode: response.statusCode,
+            latencyMs: Date.now() - startedAt,
+            actor: request.user?.email ?? request.user?.id ?? request.user?.sub,
+          })
+          .catch((err: unknown) => {
+            this.logger.error('Failed to record API request metrics', err);
+          });
       }),
     );
   }

@@ -114,7 +114,13 @@ export class ProviderRegistryService implements OnModuleInit {
         id: 'anthropic',
         name: 'Anthropic Compatible',
         type: 'cloud',
-        enabled: Boolean(this.configService.get<string>('ANTHROPIC_API_KEY')),
+        // Only enable when ANTHROPIC_BASE_URL is explicitly set to an
+        // OpenAI-compatible endpoint. The native Anthropic API is not
+        // OpenAI-compatible, so enabling the provider without a compatible
+        // base URL would cause every request and health-check to fail.
+        enabled:
+          Boolean(this.configService.get<string>('ANTHROPIC_API_KEY')) &&
+          Boolean(this.configService.get<string>('ANTHROPIC_BASE_URL')),
         priority: 2,
         baseUrl:
           this.configService.get<string>('ANTHROPIC_BASE_URL') ??

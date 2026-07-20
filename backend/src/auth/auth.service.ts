@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { randomUUID, scryptSync, timingSafeEqual } from 'node:crypto';
+import { randomBytes, randomUUID, scryptSync, timingSafeEqual } from 'node:crypto';
 import { DatabaseService } from '../database/database.service';
 import { type StoredUser } from '../database/database.types';
 import { MonitoringService } from '../monitoring/monitoring.service';
@@ -46,22 +46,24 @@ export class AuthService implements OnModuleInit {
   ) {}
 
   async onModuleInit(): Promise<void> {
+    const adminEmail =
+      this.configService.get<string>('ADMIN_EMAIL') ?? DEFAULT_ADMIN_EMAIL;
+    const adminPassword =
+      this.configService.get<string>('ADMIN_PASSWORD') ??
+      DEFAULT_ADMIN_PASSWORD;
+
     await this.databaseService.mutate((draft) => {
-      const existing = draft.users.find(
-        (user) => user.email === DEFAULT_ADMIN_EMAIL,
-      );
+      const existing = draft.users.find((user) => user.email === adminEmail);
       if (existing != null) {
         return;
       }
 
+      const salt = randomBytes(16).toString('hex');
       const timestamp = new Date().toISOString();
       const adminUser: StoredUser = {
         id: randomUUID(),
-        email: DEFAULT_ADMIN_EMAIL,
-        passwordEntry: buildPasswordEntry(
-          DEFAULT_ADMIN_PASSWORD,
-          'aio-admin-salt',
-        ),
+        email: adminEmail,
+        passwordEntry: buildPasswordEntry(adminPassword, salt),
         roles: DEFAULT_ADMIN_ROLES,
         createdAt: timestamp,
         updatedAt: timestamp,

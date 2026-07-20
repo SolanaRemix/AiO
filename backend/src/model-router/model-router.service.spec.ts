@@ -23,6 +23,7 @@ describe('ModelRouterService', () => {
       AIO_DATA_FILE: dataFile,
       OPENAI_API_KEY: 'openai-key',
       ANTHROPIC_API_KEY: 'anthropic-key',
+      ANTHROPIC_BASE_URL: 'https://anthropic-openai-compat.example.com/v1',
     };
 
     const moduleRef: TestingModule = await Test.createTestingModule({
