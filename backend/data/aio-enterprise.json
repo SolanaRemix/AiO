@@ -1,0 +1,693 @@
+{
+  "users": [
+    {
+      "id": "12f9c5ba-08da-42ca-8051-f73157c3ab53",
+      "email": "admin@aio.local",
+      "passwordEntry": "aio-admin-salt:62ed27b217b716e14ee567170a8b1a3b15656fef33ee66a78f72b14a21a08957488a4c7d9e1995bff5d10def6a144dc4709ca70977278c9094775357304e622b",
+      "roles": [
+        "admin"
+      ],
+      "createdAt": "2026-07-20T05:44:37.699Z",
+      "updatedAt": "2026-07-20T05:44:37.699Z"
+    }
+  ],
+  "projects": [
+    {
+      "id": "f7a05dc3-cf36-493a-b3e5-78d7b5369f58",
+      "name": "AiO Enterprise",
+      "description": "Production enterprise AI operating system workspace.",
+      "repositoryUrl": "https://github.com/SolanaRemix/AiO",
+      "status": "active",
+      "createdAt": "2026-07-20T05:47:18.085Z",
+      "updatedAt": "2026-07-20T05:47:18.085Z"
+    },
+    {
+      "id": "5896e623-6899-452e-995f-f2eb51faf02e",
+      "name": "AiO Enterprise",
+      "description": "Production enterprise AI operating system workspace.",
+      "repositoryUrl": "https://github.com/SolanaRemix/AiO",
+      "status": "active",
+      "createdAt": "2026-07-20T05:46:56.084Z",
+      "updatedAt": "2026-07-20T05:46:56.084Z"
+    },
+    {
+      "id": "7adff6df-6b48-452c-9dea-bf139237b468",
+      "name": "AiO Enterprise",
+      "description": "Production enterprise AI operating system workspace.",
+      "repositoryUrl": "https://github.com/SolanaRemix/AiO",
+      "status": "active",
+      "createdAt": "2026-07-20T05:44:57.678Z",
+      "updatedAt": "2026-07-20T05:44:57.678Z"
+    }
+  ],
+  "memoryRecords": [],
+  "knowledgeDocuments": [
+    {
+      "id": "a87c85ab-5be7-4b5c-b8f8-e5ef3b0f716c",
+      "title": "Orchestration playbook",
+      "excerpt": "Guidelines for decomposing prompts into agent execution plans.",
+      "content": "Use staged execution, assign specialists, validate dependencies, and summarize risk before release.",
+      "tags": [
+        "orchestration",
+        "planning",
+        "agents"
+      ],
+      "createdAt": "2026-07-20T05:44:37.739Z",
+      "updatedAt": "2026-07-20T05:44:37.739Z"
+    },
+    {
+      "id": "ccae428d-4cb0-4860-9874-b247cce71344",
+      "title": "Enterprise memory patterns",
+      "excerpt": "Strategies for project, workspace, and user memory management.",
+      "content": "Persist reusable decisions, annotate project context, and index operational traces for later retrieval.",
+      "tags": [
+        "memory",
+        "knowledge",
+        "persistence"
+      ],
+      "createdAt": "2026-07-20T05:44:37.739Z",
+      "updatedAt": "2026-07-20T05:44:37.739Z"
+    }
+  ],
+  "providers": [
+    {
+      "id": "openai",
+      "name": "OpenAI Compatible",
+      "type": "cloud",
+      "enabled": false,
+      "priority": 1,
+      "baseUrl": "https://api.openai.com/v1",
+      "models": [
+        "gpt-4.1",
+        "gpt-4o",
+        "gpt-4o-mini"
+      ],
+      "timeoutMs": 15000,
+      "maxRetries": 2,
+      "headers": {},
+      "health": "unavailable",
+      "failureCount": 0,
+      "requestCount": 0,
+      "totalInputTokens": 0,
+      "totalOutputTokens": 0,
+      "estimatedCostUsd": 0,
+      "createdAt": "2026-07-20T05:44:37.698Z",
+      "updatedAt": "2026-07-20T05:44:37.698Z"
+    },
+    {
+      "id": "anthropic",
+      "name": "Anthropic Compatible",
+      "type": "cloud",
+      "enabled": false,
+      "priority": 2,
+      "baseUrl": "https://api.anthropic.com/v1",
+      "models": [
+        "claude-3-7-sonnet",
+        "claude-3-5-haiku"
+      ],
+      "timeoutMs": 15000,
+      "maxRetries": 2,
+      "headers": {},
+      "health": "unavailable",
+      "failureCount": 0,
+      "requestCount": 0,
+      "totalInputTokens": 0,
+      "totalOutputTokens": 0,
+      "estimatedCostUsd": 0,
+      "createdAt": "2026-07-20T05:44:37.698Z",
+      "updatedAt": "2026-07-20T05:44:37.698Z"
+    },
+    {
+      "id": "google",
+      "name": "Google Compatible",
+      "type": "cloud",
+      "enabled": false,
+      "priority": 3,
+      "baseUrl": "https://generativelanguage.googleapis.com/v1beta/openai",
+      "models": [
+        "gemini-1.5-pro",
+        "gemini-1.5-flash"
+      ],
+      "timeoutMs": 15000,
+      "maxRetries": 2,
+      "headers": {},
+      "health": "unavailable",
+      "failureCount": 0,
+      "requestCount": 0,
+      "totalInputTokens": 0,
+      "totalOutputTokens": 0,
+      "estimatedCostUsd": 0,
+      "createdAt": "2026-07-20T05:44:37.698Z",
+      "updatedAt": "2026-07-20T05:44:37.698Z"
+    }
+  ],
+  "workflows": [
+    {
+      "id": "b54f3705-2f9b-4c5f-a5a6-d66b2a9a12d0",
+      "name": "Release flow",
+      "steps": [
+        {
+          "id": "task-1",
+          "name": "Plan",
+          "type": "task",
+          "action": "plan release"
+        },
+        {
+          "id": "approval-1",
+          "name": "Approval",
+          "type": "approval"
+        }
+      ],
+      "createdAt": "2026-07-20T05:47:18.152Z",
+      "updatedAt": "2026-07-20T05:47:18.152Z"
+    },
+    {
+      "id": "40d19e4a-077a-4116-8117-acabc5078772",
+      "name": "Release flow",
+      "steps": [
+        {
+          "id": "task-1",
+          "name": "Plan",
+          "type": "task",
+          "action": "plan release"
+        },
+        {
+          "id": "approval-1",
+          "name": "Approval",
+          "type": "approval"
+        }
+      ],
+      "createdAt": "2026-07-20T05:46:56.153Z",
+      "updatedAt": "2026-07-20T05:46:56.153Z"
+    },
+    {
+      "id": "e51f8756-2a20-45f4-b290-984c96a5d113",
+      "name": "Release flow",
+      "steps": [
+        {
+          "id": "task-1",
+          "name": "Plan",
+          "type": "task",
+          "action": "plan release"
+        },
+        {
+          "id": "approval-1",
+          "name": "Approval",
+          "type": "approval"
+        }
+      ],
+      "createdAt": "2026-07-20T05:44:57.745Z",
+      "updatedAt": "2026-07-20T05:44:57.745Z"
+    }
+  ],
+  "workflowExecutions": [
+    {
+      "id": "9e7ad801-af9b-4476-9145-f60d836df96e",
+      "workflowId": "b54f3705-2f9b-4c5f-a5a6-d66b2a9a12d0",
+      "name": "Release flow",
+      "status": "completed",
+      "input": {
+        "approved": true
+      },
+      "output": {
+        "completedSteps": 2,
+        "waitingApproval": false
+      },
+      "steps": [
+        {
+          "stepId": "task-1",
+          "name": "Plan",
+          "status": "completed",
+          "attempts": 1,
+          "startedAt": "2026-07-20T05:47:18.152Z",
+          "finishedAt": "2026-07-20T05:47:18.153Z",
+          "output": {
+            "action": "plan release",
+            "recommendedAgents": [
+              "delivery-planner",
+              "backend-architect",
+              "quality-reviewer",
+              "governance-builder"
+            ],
+            "knowledgeHits": 2
+          }
+        },
+        {
+          "stepId": "approval-1",
+          "name": "Approval",
+          "status": "completed",
+          "attempts": 1,
+          "startedAt": "2026-07-20T05:47:18.153Z",
+          "finishedAt": "2026-07-20T05:47:18.153Z",
+          "output": {
+            "approved": true
+          }
+        }
+      ],
+      "createdAt": "2026-07-20T05:47:18.153Z",
+      "updatedAt": "2026-07-20T05:47:18.153Z"
+    },
+    {
+      "id": "ce979753-3b95-4d1c-b1ad-897f11eab0c7",
+      "workflowId": "40d19e4a-077a-4116-8117-acabc5078772",
+      "name": "Release flow",
+      "status": "completed",
+      "input": {
+        "approved": true
+      },
+      "output": {
+        "completedSteps": 2,
+        "waitingApproval": false
+      },
+      "steps": [
+        {
+          "stepId": "task-1",
+          "name": "Plan",
+          "status": "completed",
+          "attempts": 1,
+          "startedAt": "2026-07-20T05:46:56.154Z",
+          "finishedAt": "2026-07-20T05:46:56.154Z",
+          "output": {
+            "action": "plan release",
+            "recommendedAgents": [
+              "delivery-planner",
+              "backend-architect",
+              "quality-reviewer",
+              "governance-builder"
+            ],
+            "knowledgeHits": 2
+          }
+        },
+        {
+          "stepId": "approval-1",
+          "name": "Approval",
+          "status": "completed",
+          "attempts": 1,
+          "startedAt": "2026-07-20T05:46:56.154Z",
+          "finishedAt": "2026-07-20T05:46:56.154Z",
+          "output": {
+            "approved": true
+          }
+        }
+      ],
+      "createdAt": "2026-07-20T05:46:56.154Z",
+      "updatedAt": "2026-07-20T05:46:56.154Z"
+    },
+    {
+      "id": "c06bd209-3280-4803-810b-efa341946c8e",
+      "workflowId": "e51f8756-2a20-45f4-b290-984c96a5d113",
+      "name": "Release flow",
+      "status": "completed",
+      "input": {
+        "approved": true
+      },
+      "output": {
+        "completedSteps": 2,
+        "waitingApproval": false
+      },
+      "steps": [
+        {
+          "stepId": "task-1",
+          "name": "Plan",
+          "status": "completed",
+          "attempts": 1,
+          "startedAt": "2026-07-20T05:44:57.746Z",
+          "finishedAt": "2026-07-20T05:44:57.746Z",
+          "output": {
+            "action": "plan release",
+            "recommendedAgents": [
+              "delivery-planner",
+              "backend-architect",
+              "quality-reviewer",
+              "governance-builder"
+            ],
+            "knowledgeHits": 2
+          }
+        },
+        {
+          "stepId": "approval-1",
+          "name": "Approval",
+          "status": "completed",
+          "attempts": 1,
+          "startedAt": "2026-07-20T05:44:57.746Z",
+          "finishedAt": "2026-07-20T05:44:57.746Z",
+          "output": {
+            "approved": true
+          }
+        }
+      ],
+      "createdAt": "2026-07-20T05:44:57.746Z",
+      "updatedAt": "2026-07-20T05:44:57.746Z"
+    }
+  ],
+  "files": [],
+  "agentExecutions": [],
+  "auditLogs": [
+    {
+      "id": "b370ddb1-a563-4975-888d-c72fa7ad8af2",
+      "action": "workflow.run",
+      "actor": "admin@aio.local",
+      "resource": "Release flow",
+      "status": "success",
+      "detail": "Workflow finished with status completed.",
+      "createdAt": "2026-07-20T05:47:18.153Z"
+    },
+    {
+      "id": "04350734-fed0-40d6-817f-4e8f0cbca03b",
+      "action": "auth.login",
+      "actor": "admin@aio.local",
+      "resource": "session",
+      "status": "success",
+      "detail": "JWT session issued.",
+      "createdAt": "2026-07-20T05:47:18.146Z"
+    },
+    {
+      "id": "c30d586d-1234-4291-887f-a71a6768766e",
+      "action": "auth.login",
+      "actor": "admin@aio.local",
+      "resource": "session",
+      "status": "success",
+      "detail": "JWT session issued.",
+      "createdAt": "2026-07-20T05:47:18.077Z"
+    },
+    {
+      "id": "23ace2c7-ae57-4b57-b6e0-76bffcb90942",
+      "action": "auth.login",
+      "actor": "admin@aio.local",
+      "resource": "session",
+      "status": "success",
+      "detail": "JWT session issued.",
+      "createdAt": "2026-07-20T05:47:18.015Z"
+    },
+    {
+      "id": "73ce0dbc-1bc0-4481-8574-e426bb02cb7c",
+      "action": "auth.login",
+      "actor": "admin@aio.local",
+      "resource": "session",
+      "status": "success",
+      "detail": "JWT session issued.",
+      "createdAt": "2026-07-20T05:47:17.942Z"
+    },
+    {
+      "id": "88a850b1-ea4b-4ff0-9c99-f6ed59bc349a",
+      "action": "workflow.run",
+      "actor": "admin@aio.local",
+      "resource": "Release flow",
+      "status": "success",
+      "detail": "Workflow finished with status completed.",
+      "createdAt": "2026-07-20T05:46:56.155Z"
+    },
+    {
+      "id": "b4edcc5a-c050-4102-bcf1-852eeb27685b",
+      "action": "auth.login",
+      "actor": "admin@aio.local",
+      "resource": "session",
+      "status": "success",
+      "detail": "JWT session issued.",
+      "createdAt": "2026-07-20T05:46:56.147Z"
+    },
+    {
+      "id": "80fa7752-32a4-47c9-a01c-e0e234a36edd",
+      "action": "auth.login",
+      "actor": "admin@aio.local",
+      "resource": "session",
+      "status": "success",
+      "detail": "JWT session issued.",
+      "createdAt": "2026-07-20T05:46:56.076Z"
+    },
+    {
+      "id": "bda7fb9c-55ba-4fbf-9c38-b89bff82abf4",
+      "action": "auth.login",
+      "actor": "admin@aio.local",
+      "resource": "session",
+      "status": "success",
+      "detail": "JWT session issued.",
+      "createdAt": "2026-07-20T05:46:56.015Z"
+    },
+    {
+      "id": "5198a9a9-6d37-41a1-93f1-d2ea02b4fb32",
+      "action": "auth.login",
+      "actor": "admin@aio.local",
+      "resource": "session",
+      "status": "success",
+      "detail": "JWT session issued.",
+      "createdAt": "2026-07-20T05:46:55.943Z"
+    },
+    {
+      "id": "15d063b0-dd48-40f2-bd4b-e90c1e7b4791",
+      "action": "workflow.run",
+      "actor": "admin@aio.local",
+      "resource": "Release flow",
+      "status": "success",
+      "detail": "Workflow finished with status completed.",
+      "createdAt": "2026-07-20T05:44:57.746Z"
+    },
+    {
+      "id": "24f8cc3a-7afc-488f-8f8c-a8c2de91d955",
+      "action": "auth.login",
+      "actor": "admin@aio.local",
+      "resource": "session",
+      "status": "success",
+      "detail": "JWT session issued.",
+      "createdAt": "2026-07-20T05:44:57.739Z"
+    },
+    {
+      "id": "be8db9be-9571-42c3-be27-a526b46bca1f",
+      "action": "auth.login",
+      "actor": "admin@aio.local",
+      "resource": "session",
+      "status": "success",
+      "detail": "JWT session issued.",
+      "createdAt": "2026-07-20T05:44:57.671Z"
+    },
+    {
+      "id": "d7b8cc94-952e-4165-9593-c82ca2871e84",
+      "action": "auth.login",
+      "actor": "admin@aio.local",
+      "resource": "session",
+      "status": "success",
+      "detail": "JWT session issued.",
+      "createdAt": "2026-07-20T05:44:57.606Z"
+    },
+    {
+      "id": "36a1550c-6fee-4b48-8c00-222482cbaf1c",
+      "action": "auth.login",
+      "actor": "admin@aio.local",
+      "resource": "session",
+      "status": "success",
+      "detail": "JWT session issued.",
+      "createdAt": "2026-07-20T05:44:57.534Z"
+    }
+  ],
+  "requestMetrics": [
+    {
+      "id": "043d215b-376a-4c7a-9972-c54456e52669",
+      "method": "POST",
+      "path": "/v1/workflows/run",
+      "statusCode": 201,
+      "latencyMs": 3,
+      "actor": "admin@aio.local",
+      "createdAt": "2026-07-20T05:47:18.154Z"
+    },
+    {
+      "id": "45da570a-4fc6-48f6-9859-1fbe2d956967",
+      "method": "POST",
+      "path": "/auth/login",
+      "statusCode": 201,
+      "latencyMs": 40,
+      "createdAt": "2026-07-20T05:47:18.147Z"
+    },
+    {
+      "id": "ad061622-9d0b-43fd-a7fd-dd6f0c2b2a13",
+      "method": "GET",
+      "path": "/v1/projects",
+      "statusCode": 200,
+      "latencyMs": 0,
+      "actor": "admin@aio.local",
+      "createdAt": "2026-07-20T05:47:18.088Z"
+    },
+    {
+      "id": "9b3e53c0-6802-4ca4-a4f6-cbf52988cd3d",
+      "method": "POST",
+      "path": "/v1/projects",
+      "statusCode": 201,
+      "latencyMs": 2,
+      "actor": "admin@aio.local",
+      "createdAt": "2026-07-20T05:47:18.085Z"
+    },
+    {
+      "id": "a027b47a-2635-4ba0-887b-2814719daa7f",
+      "method": "POST",
+      "path": "/auth/login",
+      "statusCode": 201,
+      "latencyMs": 39,
+      "createdAt": "2026-07-20T05:47:18.078Z"
+    },
+    {
+      "id": "62a45e3b-d463-4d99-b085-ae0f5e34310f",
+      "method": "POST",
+      "path": "/auth/login",
+      "statusCode": 201,
+      "latencyMs": 40,
+      "createdAt": "2026-07-20T05:47:18.017Z"
+    },
+    {
+      "id": "3595f6ba-720f-41d2-90d6-b54dd2dca46b",
+      "method": "GET",
+      "path": "/",
+      "statusCode": 200,
+      "latencyMs": 0,
+      "createdAt": "2026-07-20T05:47:17.954Z"
+    },
+    {
+      "id": "1f857b98-c4f4-4564-8978-4ed480f435c4",
+      "method": "POST",
+      "path": "/auth/login",
+      "statusCode": 201,
+      "latencyMs": 47,
+      "createdAt": "2026-07-20T05:47:17.946Z"
+    },
+    {
+      "id": "49addda8-1e4e-49cf-baa6-c64e13f045b1",
+      "method": "POST",
+      "path": "/v1/workflows/run",
+      "statusCode": 201,
+      "latencyMs": 3,
+      "actor": "admin@aio.local",
+      "createdAt": "2026-07-20T05:46:56.155Z"
+    },
+    {
+      "id": "78c3430d-2b1b-4d38-9845-36de379426fa",
+      "method": "POST",
+      "path": "/auth/login",
+      "statusCode": 201,
+      "latencyMs": 40,
+      "createdAt": "2026-07-20T05:46:56.148Z"
+    },
+    {
+      "id": "119e2e9e-bcd9-4786-b6ea-784f38487e0c",
+      "method": "GET",
+      "path": "/v1/projects",
+      "statusCode": 200,
+      "latencyMs": 0,
+      "actor": "admin@aio.local",
+      "createdAt": "2026-07-20T05:46:56.088Z"
+    },
+    {
+      "id": "d6a00716-aa85-43af-b853-d94cace4fc06",
+      "method": "POST",
+      "path": "/v1/projects",
+      "statusCode": 201,
+      "latencyMs": 2,
+      "actor": "admin@aio.local",
+      "createdAt": "2026-07-20T05:46:56.084Z"
+    },
+    {
+      "id": "fa8ea2c9-be7e-4e8c-b209-8837cf812ddf",
+      "method": "POST",
+      "path": "/auth/login",
+      "statusCode": 201,
+      "latencyMs": 39,
+      "createdAt": "2026-07-20T05:46:56.077Z"
+    },
+    {
+      "id": "35ecee66-b9eb-4d02-8467-0b24a380ea7c",
+      "method": "POST",
+      "path": "/auth/login",
+      "statusCode": 201,
+      "latencyMs": 39,
+      "createdAt": "2026-07-20T05:46:56.016Z"
+    },
+    {
+      "id": "aa39563b-daaa-494a-9450-7b32fce35aea",
+      "method": "GET",
+      "path": "/",
+      "statusCode": 200,
+      "latencyMs": 0,
+      "createdAt": "2026-07-20T05:46:55.955Z"
+    },
+    {
+      "id": "b31c4849-268b-40a4-8d4c-205bf4479411",
+      "method": "POST",
+      "path": "/auth/login",
+      "statusCode": 201,
+      "latencyMs": 47,
+      "createdAt": "2026-07-20T05:46:55.947Z"
+    },
+    {
+      "id": "67048080-f9f3-4bbf-ae49-92988e98242c",
+      "method": "POST",
+      "path": "/v1/workflows/run",
+      "statusCode": 201,
+      "latencyMs": 3,
+      "actor": "admin@aio.local",
+      "createdAt": "2026-07-20T05:44:57.747Z"
+    },
+    {
+      "id": "a9f08a81-e2e5-46a1-871d-633375f91dcd",
+      "method": "POST",
+      "path": "/auth/login",
+      "statusCode": 201,
+      "latencyMs": 40,
+      "createdAt": "2026-07-20T05:44:57.740Z"
+    },
+    {
+      "id": "1e02c2a4-ba8c-4d53-8963-f6ee3b005ebf",
+      "method": "GET",
+      "path": "/v1/projects",
+      "statusCode": 200,
+      "latencyMs": 0,
+      "actor": "admin@aio.local",
+      "createdAt": "2026-07-20T05:44:57.682Z"
+    },
+    {
+      "id": "11244c76-a1f1-4fc7-92d3-3b703ea56052",
+      "method": "POST",
+      "path": "/v1/projects",
+      "statusCode": 201,
+      "latencyMs": 3,
+      "actor": "admin@aio.local",
+      "createdAt": "2026-07-20T05:44:57.679Z"
+    },
+    {
+      "id": "a12c66a9-52fb-4ca7-9d56-f4c789368d61",
+      "method": "POST",
+      "path": "/auth/login",
+      "statusCode": 201,
+      "latencyMs": 40,
+      "createdAt": "2026-07-20T05:44:57.672Z"
+    },
+    {
+      "id": "06823a1d-fd65-466f-8a0b-7ad4e044ea93",
+      "method": "POST",
+      "path": "/auth/login",
+      "statusCode": 201,
+      "latencyMs": 40,
+      "createdAt": "2026-07-20T05:44:57.608Z"
+    },
+    {
+      "id": "20fa26a5-83a7-431b-8dd4-a01e19c1fe39",
+      "method": "GET",
+      "path": "/",
+      "statusCode": 200,
+      "latencyMs": 0,
+      "createdAt": "2026-07-20T05:44:57.546Z"
+    },
+    {
+      "id": "e1e291d6-c7f4-4cab-813e-c2ca8abc4664",
+      "method": "POST",
+      "path": "/auth/login",
+      "statusCode": 201,
+      "latencyMs": 48,
+      "createdAt": "2026-07-20T05:44:57.538Z"
+    },
+    {
+      "id": "a06f577d-83d5-491f-b6ba-32968a9b992f",
+      "method": "GET",
+      "path": "/",
+      "statusCode": 200,
+      "latencyMs": 1,
+      "createdAt": "2026-07-20T05:44:37.760Z"
+    }
+  ]
+}

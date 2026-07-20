@@ -11,19 +11,19 @@ export class ProjectsController {
 
   @Post()
   @ApiOperation({ summary: 'Create a project workspace' })
-  create(@Body() dto: CreateProjectDto): ProjectEntity {
+  create(@Body() dto: CreateProjectDto): Promise<ProjectEntity> {
     return this.projectsService.create(dto);
   }
 
   @Get()
   @ApiOperation({ summary: 'List projects' })
-  findAll(): ProjectEntity[] {
+  findAll(): Promise<ProjectEntity[]> {
     return this.projectsService.findAll();
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get a project by id' })
-  findOne(@Param('id') id: string): ProjectEntity {
+  findOne(@Param('id') id: string): Promise<ProjectEntity> {
     return this.projectsService.findOne(id);
   }
 }

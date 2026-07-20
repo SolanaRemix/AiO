@@ -17,7 +17,16 @@ export interface AgentDefinition {
 }
 
 export interface AgentExecutionSummary {
+  id?: string;
   requestedPrompt: string;
   selectedAgents: string[];
   queuedAt: string;
+  summary?: string;
+  steps?: string[];
+  validations?: string[];
+}
+
+export interface AgentExecutionDetail extends AgentExecutionSummary {
+  status: 'planned' | 'running' | 'completed';
+  report: string;
 }
