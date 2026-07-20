@@ -4,14 +4,16 @@ import { scryptSync, timingSafeEqual } from 'node:crypto';
 import { LoginDto } from './dto/login.dto';
 import { type JwtPayload } from './interfaces/jwt-payload.interface';
 
+const SCRYPT_KEYLEN = 64;
+
 /** Minimal in-memory user store for demo purposes.
  *  Passwords are stored as scrypt hashes (N=16384, r=8, p=1, keylen=64).
- *  Replace with a real UserService backed by a persistent store in production.
- *  Each entry uses the format "<hex-salt>:<hex-hash>". */
+ *  Each entry uses the format "<hex-salt>:<hex-hash>" with a unique salt per user.
+ *  Replace with a real UserService backed by a persistent store in production. */
 const DEMO_USERS: Record<string, { passwordEntry: string; roles: string[] }> = {
   'admin@aio.local': {
     passwordEntry:
-      'aio-demo-salt:d0c0588f9ebf7d316f51fab49b9dfad5b48b1b06a2a7f489722a691a7ab822a992822ce98d7516ea970eefdcd86aaebb2fd3bccc9639df5537ef68a98d27b6f4',
+      '597e66ccc8679cb575a8a85e31631004:70cfb5ee0639d275b550c9ce4d5966c743cff064e9407911e49be86e52bf3892def8f91b7471219e5562f3dacf57eb025f77870ea7c9d24dd17a6282cb1c0563',
     roles: ['admin'],
   },
 };
@@ -21,7 +23,8 @@ function verifyPassword(password: string, entry: string): boolean {
   if (separatorIdx === -1) return false;
   const salt = entry.slice(0, separatorIdx);
   const storedHash = Buffer.from(entry.slice(separatorIdx + 1), 'hex');
-  const incoming = scryptSync(password, salt, storedHash.length);
+  if (storedHash.length !== SCRYPT_KEYLEN) return false;
+  const incoming = scryptSync(password, salt, SCRYPT_KEYLEN);
   try {
     return timingSafeEqual(incoming, storedHash);
   } catch {
