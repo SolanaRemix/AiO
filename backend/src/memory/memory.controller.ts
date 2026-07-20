@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { CreateMemoryDto } from './dto/create-memory.dto';
 import { MemoryService, type MemoryRecord } from './memory.service';
 
 @ApiTags('memory')
@@ -18,15 +19,7 @@ export class MemoryController {
 
   @Post()
   @ApiOperation({ summary: 'Create a memory record' })
-  create(
-    @Body()
-    body: {
-      scope: MemoryRecord['scope'];
-      key: string;
-      value: string;
-      projectId?: string;
-    },
-  ): MemoryRecord {
-    return this.memoryService.create(body);
+  create(@Body() dto: CreateMemoryDto): MemoryRecord {
+    return this.memoryService.create(dto);
   }
 }

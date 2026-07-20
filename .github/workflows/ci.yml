@@ -26,6 +26,12 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run build
+      - run: |
+          if npm run | grep -qw "test"; then
+            npm run test
+          else
+            echo "No test script found, skipping."
+          fi
 
   backend:
     name: Backend

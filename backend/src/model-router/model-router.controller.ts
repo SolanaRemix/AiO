@@ -1,9 +1,7 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import {
-  type ModelRouteRequest,
-  type ModelRouteResponse,
-} from './interfaces/provider.interface';
+import { ModelRouteRequestDto } from './dto/model-route-request.dto';
+import { type ModelRouteResponse } from './interfaces/provider.interface';
 import { ModelRouterService } from './model-router.service';
 
 @ApiTags('model-router')
@@ -19,7 +17,7 @@ export class ModelRouterController {
 
   @Post('route')
   @ApiOperation({ summary: 'Route a model inference request' })
-  route(@Body() request: ModelRouteRequest): Promise<ModelRouteResponse> {
-    return this.modelRouterService.route(request);
+  route(@Body() dto: ModelRouteRequestDto): Promise<ModelRouteResponse> {
+    return this.modelRouterService.route(dto);
   }
 }
