@@ -1,0 +1,18 @@
+{
+  "name": "aio-enterprise",
+  "version": "1.0.0",
+  "description": "AiO Enterprise - AI Operating System",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev --prefix frontend\" \"npm run start:dev --prefix backend\"",
+    "build": "npm run build --prefix frontend && npm run build --prefix backend",
+    "lint": "npm run lint --prefix frontend && npm run lint --prefix backend",
+    "test": "npm run test --prefix backend",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:build": "docker compose build"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
