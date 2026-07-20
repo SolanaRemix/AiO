@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'node:crypto';
 import { DatabaseService } from '../database/database.service';
@@ -21,6 +21,8 @@ interface ProviderSeed {
 
 @Injectable()
 export class ProviderRegistryService implements OnModuleInit {
+  private readonly logger = new Logger(ProviderRegistryService.name);
+
   constructor(
     private readonly databaseService: DatabaseService,
     private readonly configService: ConfigService,
@@ -145,6 +147,18 @@ export class ProviderRegistryService implements OnModuleInit {
     await this.databaseService.mutate((draft) => {
       draft.providers = seeds.map((seed) => this.toRecord(seed));
     });
+
+    if (
+      this.configService.get<string>('ANTHROPIC_API_KEY') &&
+      !this.configService.get<string>('ANTHROPIC_BASE_URL')
+    ) {
+      this.logger.warn(
+        'ANTHROPIC_API_KEY is set but ANTHROPIC_BASE_URL is not configured. ' +
+          'The native Anthropic API is not OpenAI-compatible, so the Anthropic ' +
+          'provider has been seeded as disabled. Set ANTHROPIC_BASE_URL to an ' +
+          'OpenAI-compatible proxy endpoint (e.g. a LiteLLM proxy) to enable it.',
+      );
+    }
   }
 
   private toRecord(seed: ProviderSeed): StoredProviderRecord {
