@@ -15,6 +15,12 @@ export class ModelRouterController {
     return this.modelRouterService.listProviders();
   }
 
+  @Get('health')
+  @ApiOperation({ summary: 'Run provider health checks' })
+  health() {
+    return this.modelRouterService.healthCheck();
+  }
+
   @Post('route')
   @ApiOperation({ summary: 'Route a model inference request' })
   route(@Body() dto: ModelRouteRequestDto): Promise<ModelRouteResponse> {

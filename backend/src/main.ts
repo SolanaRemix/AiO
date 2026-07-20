@@ -25,9 +25,9 @@ async function bootstrap(): Promise<void> {
   const swaggerConfig = new DocumentBuilder()
     .setTitle('AiO Enterprise API')
     .setDescription(
-      'Backend APIs for orchestration, agents, projects, and memory.',
+      'Backend APIs for provider routing, orchestration, workflows, projects, and memory.',
     )
-    .setVersion('1.0.0')
+    .setVersion('1.0.2')
     .addBearerAuth()
     .build();
   const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);

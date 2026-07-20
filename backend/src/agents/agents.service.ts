@@ -1,6 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
+import { DatabaseService } from '../database/database.service';
 import {
   type AgentDefinition,
+  type AgentExecutionDetail,
   type AgentExecutionSummary,
   type AgentType,
 } from './interfaces/agent.interface';
@@ -98,42 +101,6 @@ const ROLES = [
     capabilities: ['quality assessment', 'risk detection'],
     maxConcurrency: 8,
   },
-  {
-    slug: 'analyst',
-    label: 'Analyst',
-    capabilities: ['signal interpretation', 'decision support'],
-    maxConcurrency: 10,
-  },
-  {
-    slug: 'operator',
-    label: 'Operator',
-    capabilities: ['workflow execution', 'incident handling'],
-    maxConcurrency: 14,
-  },
-  {
-    slug: 'optimizer',
-    label: 'Optimizer',
-    capabilities: ['performance tuning', 'cost controls'],
-    maxConcurrency: 8,
-  },
-  {
-    slug: 'guardian',
-    label: 'Guardian',
-    capabilities: ['policy review', 'safety checks'],
-    maxConcurrency: 6,
-  },
-  {
-    slug: 'researcher',
-    label: 'Researcher',
-    capabilities: ['knowledge retrieval', 'comparative analysis'],
-    maxConcurrency: 9,
-  },
-  {
-    slug: 'coordinator',
-    label: 'Coordinator',
-    capabilities: ['handoff management', 'status reporting'],
-    maxConcurrency: 16,
-  },
 ] as const;
 
 const AGENT_DEFINITIONS: AgentDefinition[] = DOMAINS.flatMap((domain) =>
@@ -149,6 +116,8 @@ const AGENT_DEFINITIONS: AgentDefinition[] = DOMAINS.flatMap((domain) =>
 @Injectable()
 export class AgentsService {
   private readonly agents = AGENT_DEFINITIONS;
+
+  constructor(private readonly databaseService: DatabaseService) {}
 
   listAgents(): AgentDefinition[] {
     return this.agents;
@@ -168,13 +137,13 @@ export class AgentsService {
     if (normalizedPrompt.includes('security')) {
       return this.agents
         .filter((agent) => agent.id.startsWith('security-'))
-        .slice(0, 5);
+        .slice(0, 4);
     }
 
     if (normalizedPrompt.includes('data')) {
       return this.agents
         .filter((agent) => agent.id.startsWith('data-'))
-        .slice(0, 5);
+        .slice(0, 4);
     }
 
     if (
@@ -183,22 +152,101 @@ export class AgentsService {
     ) {
       return this.agents
         .filter((agent) => agent.id.startsWith('delivery-'))
-        .slice(0, 5);
+        .slice(0, 4);
     }
 
     return [
-      this.getAgent('delivery-coordinator'),
+      this.getAgent('delivery-planner'),
       this.getAgent('backend-architect'),
       this.getAgent('quality-reviewer'),
-      this.getAgent('support-operator'),
+      this.getAgent('governance-builder'),
     ];
   }
 
-  scheduleAgents(prompt: string): AgentExecutionSummary {
+  plan(prompt: string): AgentExecutionSummary {
+    const selectedAgents = this.recommendAgents(prompt).map(
+      (agent) => agent.id,
+    );
+    const summary = `Prepared ${selectedAgents.length} agents for ${prompt.slice(0, 80)}.`;
     return {
       requestedPrompt: prompt,
-      selectedAgents: this.recommendAgents(prompt).map((agent) => agent.id),
+      selectedAgents,
       queuedAt: new Date().toISOString(),
+      summary,
+      steps: [
+        'Classify the prompt and project context.',
+        'Allocate specialist agents based on risk and domain coverage.',
+        'Validate dependencies, quality gates, and monitoring requirements.',
+      ],
+      validations: [
+        'Security review coverage assigned when required.',
+        'Quality gate review added before execution.',
+      ],
     };
+  }
+
+  async execute(prompt: string): Promise<AgentExecutionDetail> {
+    const plan = this.plan(prompt);
+    const record: AgentExecutionDetail = {
+      id: randomUUID(),
+      ...plan,
+      status: 'completed',
+      report:
+        'Execution context assembled with routing, validation, and delivery oversight ready for handoff.',
+    };
+
+    await this.databaseService.mutate((draft) => {
+      draft.agentExecutions.unshift({
+        id: record.id ?? randomUUID(),
+        prompt,
+        selectedAgents: plan.selectedAgents,
+        status: 'completed',
+        summary: plan.summary ?? '',
+        steps: plan.steps ?? [],
+        validations: plan.validations ?? [],
+        createdAt: record.queuedAt,
+        updatedAt: new Date().toISOString(),
+      });
+    });
+
+    return record;
+  }
+
+  async retry(executionId: string): Promise<AgentExecutionDetail> {
+    const executions = await this.databaseService.list('agentExecutions');
+    const execution = executions.find((entry) => entry.id === executionId);
+    if (execution == null) {
+      throw new NotFoundException(
+        `Agent execution ${executionId} was not found.`,
+      );
+    }
+
+    return this.execute(execution.prompt);
+  }
+
+  async report(executionId: string): Promise<AgentExecutionDetail> {
+    const executions = await this.databaseService.list('agentExecutions');
+    const execution = executions.find((entry) => entry.id === executionId);
+    if (execution == null) {
+      throw new NotFoundException(
+        `Agent execution ${executionId} was not found.`,
+      );
+    }
+
+    return {
+      id: execution.id,
+      requestedPrompt: execution.prompt,
+      selectedAgents: execution.selectedAgents,
+      queuedAt: execution.createdAt,
+      summary: execution.summary,
+      steps: execution.steps,
+      validations: execution.validations,
+      status: execution.status,
+      report: 'Execution report generated from the persisted runtime ledger.',
+    };
+  }
+
+  scheduleAgents(prompt: string): AgentExecutionSummary {
+    return this.plan(prompt);
   }
 }

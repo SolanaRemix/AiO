@@ -26,7 +26,14 @@ export class KnowledgeEngineController {
   @Post('ingest')
   @ApiOperation({ summary: 'Add a document to the knowledge corpus' })
   ingest(
-    @Body() document: { title: string; excerpt: string; projectId?: string },
+    @Body()
+    document: {
+      title: string;
+      excerpt: string;
+      content?: string;
+      tags?: string[];
+      projectId?: string;
+    },
   ): Promise<KnowledgeHit> {
     return this.knowledgeEngineService.ingest(document);
   }

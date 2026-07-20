@@ -13,13 +13,13 @@ export class MemoryController {
   list(
     @Query('scope') scope?: MemoryRecord['scope'],
     @Query('projectId') projectId?: string,
-  ): MemoryRecord[] {
+  ): Promise<MemoryRecord[]> {
     return this.memoryService.list(scope, projectId);
   }
 
   @Post()
   @ApiOperation({ summary: 'Create a memory record' })
-  create(@Body() dto: CreateMemoryDto): MemoryRecord {
+  create(@Body() dto: CreateMemoryDto): Promise<MemoryRecord> {
     return this.memoryService.create(dto);
   }
 }

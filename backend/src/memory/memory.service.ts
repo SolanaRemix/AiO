@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
+import { DatabaseService } from '../database/database.service';
 
 export interface MemoryRecord {
   id: string;
@@ -12,10 +13,14 @@ export interface MemoryRecord {
 
 @Injectable()
 export class MemoryService {
-  private readonly records: MemoryRecord[] = [];
+  constructor(private readonly databaseService: DatabaseService) {}
 
-  list(scope?: MemoryRecord['scope'], projectId?: string): MemoryRecord[] {
-    return this.records.filter((record) => {
+  async list(
+    scope?: MemoryRecord['scope'],
+    projectId?: string,
+  ): Promise<MemoryRecord[]> {
+    const records = await this.databaseService.list('memoryRecords');
+    return records.filter((record) => {
       const scopeMatches = scope == null || record.scope === scope;
       const projectMatches =
         projectId == null || record.projectId === projectId;
@@ -23,13 +28,18 @@ export class MemoryService {
     });
   }
 
-  create(entry: Omit<MemoryRecord, 'id' | 'createdAt'>): MemoryRecord {
+  async create(
+    entry: Omit<MemoryRecord, 'id' | 'createdAt'>,
+  ): Promise<MemoryRecord> {
     const record: MemoryRecord = {
       ...entry,
       id: randomUUID(),
       createdAt: new Date().toISOString(),
     };
-    this.records.unshift(record);
+
+    await this.databaseService.mutate((draft) => {
+      draft.memoryRecords.unshift(record);
+    });
     return record;
   }
 }
