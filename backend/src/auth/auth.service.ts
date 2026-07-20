@@ -1,19 +1,33 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { timingSafeEqual } from 'node:crypto';
+import { createHash, timingSafeEqual } from 'node:crypto';
 import { LoginDto } from './dto/login.dto';
 import { type JwtPayload } from './interfaces/jwt-payload.interface';
 
 /** Minimal in-memory user store for demo purposes.
+ *  Passwords are stored as SHA-256 hashes (hex).
  *  Replace with a real UserService + bcrypt comparison in production. */
-const DEMO_USERS: Record<string, { password: string; roles: string[] }> = {
-  'admin@aio.local': { password: 'ChangeMe123!', roles: ['admin'] },
-};
+const DEMO_USERS: Record<string, { passwordSha256: string; roles: string[] }> =
+  {
+    'admin@aio.local': {
+      passwordSha256:
+        '9a4aabf0e5cf71cae2cea646613ce7e2a5919fa758e56819704be25a3a2c1f0b',
+      roles: ['admin'],
+    },
+  };
+
+function hashPassword(password: string): string {
+  return createHash('sha256').update(password).digest('hex');
+}
 
 function timingSafeStringEqual(a: string, b: string): boolean {
   const bufA = Buffer.from(a);
   const bufB = Buffer.from(b);
-  return bufA.length === bufB.length && timingSafeEqual(bufA, bufB);
+  try {
+    return timingSafeEqual(bufA, bufB);
+  } catch {
+    return false;
+  }
 }
 
 @Injectable()
@@ -25,7 +39,8 @@ export class AuthService {
     user: { id: string; email: string; roles: string[] };
   }> {
     const user = DEMO_USERS[dto.email];
-    if (!user || !timingSafeStringEqual(user.password, dto.password)) {
+    const incomingHash = hashPassword(dto.password);
+    if (!user || !timingSafeStringEqual(user.passwordSha256, incomingHash)) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
