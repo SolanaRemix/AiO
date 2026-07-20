@@ -91,7 +91,7 @@ export class MonitoringService {
       } else {
         provider.failureCount += 1;
         provider.health =
-          provider.failureCount > 1 ? 'degraded' : 'unavailable';
+          provider.failureCount > 1 ? 'unavailable' : 'degraded';
         if (
           outcome.threshold != null &&
           outcome.cooldownMs != null &&
