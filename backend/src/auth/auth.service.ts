@@ -1,13 +1,20 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { timingSafeEqual } from 'node:crypto';
 import { LoginDto } from './dto/login.dto';
 import { type JwtPayload } from './interfaces/jwt-payload.interface';
 
 /** Minimal in-memory user store for demo purposes.
  *  Replace with a real UserService + bcrypt comparison in production. */
-const DEMO_USERS: Record<string, { passwordHash: string; roles: string[] }> = {
-  'admin@aio.local': { passwordHash: 'ChangeMe123!', roles: ['admin'] },
+const DEMO_USERS: Record<string, { password: string; roles: string[] }> = {
+  'admin@aio.local': { password: 'ChangeMe123!', roles: ['admin'] },
 };
+
+function timingSafeStringEqual(a: string, b: string): boolean {
+  const bufA = Buffer.from(a);
+  const bufB = Buffer.from(b);
+  return bufA.length === bufB.length && timingSafeEqual(bufA, bufB);
+}
 
 @Injectable()
 export class AuthService {
@@ -18,7 +25,7 @@ export class AuthService {
     user: { id: string; email: string; roles: string[] };
   }> {
     const user = DEMO_USERS[dto.email];
-    if (!user || user.passwordHash !== dto.password) {
+    if (!user || !timingSafeStringEqual(user.password, dto.password)) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
