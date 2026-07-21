@@ -48,6 +48,8 @@ export const navigationItems: NavItem[] = [
   { label: "Knowledge", href: "/knowledge", description: "Indexed docs and research" },
   { label: "Memory", href: "/memory", description: "Long-term execution memory" },
   { label: "Agents", href: "/agents", description: "Distributed agent operations" },
+  { label: "Deploy", href: "/deploy", description: "Build, preview, and release pipelines" },
+  { label: "Providers", href: "/providers", description: "AI provider registry and connectors" },
 ];
 
 export const examplePrompts = [
@@ -286,6 +288,16 @@ export const contextSummaries: Record<string, { title: string; summary: string; 
     title: "Agents context",
     summary: "Distributed specialists with live load, queues, latency, and outcome tracking.",
     tags: ["Swarms", "Observability", "Capacity"],
+  },
+  "/deploy": {
+    title: "Deploy context",
+    summary: "Build, preview, and promote production deployments with rollback and environment control.",
+    tags: ["CI/CD", "Rollback", "Environments"],
+  },
+  "/providers": {
+    title: "Providers context",
+    summary: "Manage AI provider registry, connectors, routing priorities, and integration health.",
+    tags: ["Providers", "Connectors", "Routing"],
   },
 };
 

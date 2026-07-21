@@ -12,6 +12,8 @@ import { type Request } from 'express';
 import { AgentsService } from '../agents/agents.service';
 import { AccessGuard } from '../auth/guards/access.guard';
 import { type JwtPayload } from '../auth/interfaces/jwt-payload.interface';
+import { CreateDeploymentDto } from '../deploy/dto/create-deployment.dto';
+import { DeployService } from '../deploy/deploy.service';
 import { CreateFileDto } from '../files/dto/create-file.dto';
 import { FilesService } from '../files/files.service';
 import { KnowledgeEngineService } from '../knowledge-engine/knowledge-engine.service';
@@ -42,6 +44,7 @@ export class V1Controller {
     private readonly orchestratorService: OrchestratorService,
     private readonly filesService: FilesService,
     private readonly memoryService: MemoryService,
+    private readonly deployService: DeployService,
   ) {}
 
   @Post('chat')
@@ -126,5 +129,11 @@ export class V1Controller {
     @Query('projectId') projectId?: string,
   ) {
     return this.memoryService.list(scope, projectId);
+  }
+
+  @Post('deploy')
+  @ApiOperation({ summary: 'Trigger a deployment for a project' })
+  deploy(@Body() dto: CreateDeploymentDto) {
+    return this.deployService.deploy(dto);
   }
 }

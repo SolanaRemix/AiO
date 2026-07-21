@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import * as ScrollArea from "@radix-ui/react-scroll-area";
-import { Bot, ChevronRight, FolderKanban, Home, LibraryBig, MemoryStick, PanelLeftClose, PanelLeftOpen, Sparkles, Workflow } from "lucide-react";
+import { Bot, ChevronRight, FolderKanban, Home, LibraryBig, MemoryStick, PanelLeftClose, PanelLeftOpen, Plug, Rocket, Sparkles, Workflow } from "lucide-react";
 import { navigationItems, recentProjects } from "@/lib/constants";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -16,6 +16,8 @@ const iconMap = {
   Knowledge: LibraryBig,
   Memory: MemoryStick,
   Agents: Bot,
+  Deploy: Rocket,
+  Providers: Plug,
 } as const;
 
 type LeftSidebarProps = {
