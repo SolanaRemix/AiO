@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AgentsModule } from '../agents/agents.module';
 import { AuthModule } from '../auth/auth.module';
+import { DeployModule } from '../deploy/deploy.module';
 import { FilesModule } from '../files/files.module';
 import { KnowledgeEngineModule } from '../knowledge-engine/knowledge-engine.module';
 import { MemoryModule } from '../memory/memory.module';
@@ -14,6 +15,7 @@ import { V1Controller } from './v1.controller';
   imports: [
     AuthModule,
     AgentsModule,
+    DeployModule,
     FilesModule,
     KnowledgeEngineModule,
     MemoryModule,
