@@ -1,5 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
+import { type JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 import { DatabaseService } from '../database/database.service';
 import {
   type ProjectLifecycleState,
@@ -28,10 +33,15 @@ export class ProjectsService {
     private readonly monitoringService: MonitoringService,
   ) {}
 
-  async create(dto: CreateProjectDto): Promise<ProjectEntity> {
+  async create(
+    dto: CreateProjectDto,
+    viewer?: JwtPayload,
+  ): Promise<ProjectEntity> {
     const timestamp = new Date().toISOString();
     const project: StoredProject = {
       id: randomUUID(),
+      ownerId: viewer?.sub,
+      workspaceId: viewer?.workspaceId,
       name: dto.name,
       description: dto.description,
       repositoryUrl: dto.repositoryUrl,
@@ -62,11 +72,15 @@ export class ProjectsService {
     return project;
   }
 
-  async findAll(): Promise<ProjectEntity[]> {
-    return this.databaseService.list('projects');
+  async findAll(viewer?: JwtPayload): Promise<ProjectEntity[]> {
+    const projects = await this.databaseService.list('projects');
+    if (viewer == null || this.isAdmin(viewer)) {
+      return projects;
+    }
+    return projects.filter((project) => this.canAccessProject(viewer, project));
   }
 
-  async findOne(id: string): Promise<ProjectEntity> {
+  async findOne(id: string, viewer?: JwtPayload): Promise<ProjectEntity> {
     const projects = await this.databaseService.list('projects');
     const project = projects.find((candidate) => candidate.id === id);
     if (project == null) {
@@ -74,19 +88,23 @@ export class ProjectsService {
         `Project with ID ${id} was not found. Verify the project ID or create a new project.`,
       );
     }
+    this.ensureProjectAccess(viewer, project);
     return project;
   }
 
-  async update(id: string, dto: UpdateProjectDto): Promise<ProjectEntity> {
-    const existing = await this.findOne(id);
+  async update(
+    id: string,
+    dto: UpdateProjectDto,
+    viewer?: JwtPayload,
+  ): Promise<ProjectEntity> {
+    const existing = await this.findOne(id, viewer);
+    const previousLifecycle = existing.lifecycleState;
 
     const updated = await this.databaseService.mutate((draft) => {
       const project = draft.projects.find((candidate) => candidate.id === id);
       if (project == null) {
         throw new NotFoundException(`Project with ID ${id} was not found.`);
       }
-
-      const previousLifecycle = project.lifecycleState;
 
       if (dto.name != null) project.name = dto.name;
       if (dto.description != null) project.description = dto.description;
@@ -137,7 +155,10 @@ export class ProjectsService {
       actor: 'system',
       action: 'project.updated',
       category: 'workflow',
-      detail: `Project lifecycle moved to ${updated.lifecycleState}.`,
+      detail:
+        dto.lifecycleState != null && dto.lifecycleState !== previousLifecycle
+          ? `Project lifecycle moved ${previousLifecycle} → ${updated.lifecycleState}.`
+          : 'Project metadata updated.',
     });
 
     if (updated.gitStatus === 'conflict') {
@@ -216,7 +237,7 @@ export class ProjectsService {
     return activity;
   }
 
-  async dashboard(): Promise<{
+  async dashboard(viewer?: JwtPayload): Promise<{
     cards: StoredProject[];
     alerts: StoredProjectAlert[];
     timeline: StoredProjectActivity[];
@@ -227,11 +248,29 @@ export class ProjectsService {
       this.databaseService.list('projectAlerts'),
       this.databaseService.list('projectActivities'),
     ]);
+    const visibleProjectIds =
+      viewer == null || this.isAdmin(viewer)
+        ? new Set(projects.map((project) => project.id))
+        : new Set(
+            projects
+              .filter((project) => this.canAccessProject(viewer, project))
+              .map((project) => project.id),
+          );
+    const visibleProjects = projects.filter((project) =>
+      visibleProjectIds.has(project.id),
+    );
 
     return {
-      cards: projects,
-      alerts: alerts.filter((entry) => entry.status === 'open').slice(0, 20),
-      timeline: activity.slice(0, 30),
+      cards: visibleProjects,
+      alerts: alerts
+        .filter(
+          (entry) =>
+            entry.status === 'open' && visibleProjectIds.has(entry.projectId),
+        )
+        .slice(0, 20),
+      timeline: activity
+        .filter((entry) => visibleProjectIds.has(entry.projectId))
+        .slice(0, 30),
       quickActions: [
         {
           action: 'New Project',
@@ -248,5 +287,50 @@ export class ProjectsService {
         },
       ],
     };
+  }
+
+  async listAccessibleProjectIds(viewer: JwtPayload): Promise<Set<string>> {
+    if (this.isAdmin(viewer)) {
+      return new Set(
+        (await this.databaseService.list('projects')).map((p) => p.id),
+      );
+    }
+    const projects = await this.databaseService.list('projects');
+    return new Set(
+      projects
+        .filter((project) => this.canAccessProject(viewer, project))
+        .map((project) => project.id),
+    );
+  }
+
+  private isAdmin(viewer: JwtPayload): boolean {
+    return viewer.roles.includes('admin');
+  }
+
+  private canAccessProject(
+    viewer: JwtPayload,
+    project: StoredProject,
+  ): boolean {
+    if (project.ownerId != null) {
+      return project.ownerId === viewer.sub;
+    }
+    if (project.workspaceId != null && viewer.workspaceId != null) {
+      return project.workspaceId === viewer.workspaceId;
+    }
+    return false;
+  }
+
+  private ensureProjectAccess(
+    viewer: JwtPayload | undefined,
+    project: StoredProject,
+  ): void {
+    if (viewer == null || this.isAdmin(viewer)) {
+      return;
+    }
+    if (!this.canAccessProject(viewer, project)) {
+      throw new ForbiddenException(
+        'You are not authorized to access this project.',
+      );
+    }
   }
 }

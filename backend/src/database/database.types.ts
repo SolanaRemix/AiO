@@ -75,6 +75,8 @@ export type ProjectLifecycleState =
 
 export interface StoredProject {
   id: string;
+  ownerId?: string;
+  workspaceId?: string;
   name: string;
   description: string;
   repositoryUrl?: string;

@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
   createCipheriv,
@@ -15,6 +19,8 @@ import {
   type StoredRepository,
 } from '../database/database.types';
 import { MonitoringService } from '../monitoring/monitoring.service';
+import { ProjectsService } from '../projects/projects.service';
+import { type JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 import { GitProviderAdapters } from './adapters/git-provider-adapters';
 import { type GitProvider } from './adapters/git-provider-adapter.interface';
 import { ConnectGitDto } from './dto/connect-git.dto';
@@ -28,6 +34,7 @@ export class GitService {
     private readonly configService: ConfigService,
     private readonly monitoringService: MonitoringService,
     private readonly providerAdapters: GitProviderAdapters,
+    private readonly projectsService: ProjectsService,
   ) {}
 
   async connect(
@@ -64,15 +71,12 @@ export class GitService {
     return connection;
   }
 
-  async initRepository(dto: InitRepoDto): Promise<StoredRepository> {
-    const project = (await this.databaseService.list('projects')).find(
-      (entry) => entry.id === dto.projectId,
-    );
-    if (project == null) {
-      throw new NotFoundException(
-        'Project was not found for repository initialization.',
-      );
-    }
+  async initRepository(
+    viewer: JwtPayload,
+    dto: InitRepoDto,
+  ): Promise<StoredRepository> {
+    await this.projectsService.findOne(dto.projectId, viewer);
+    await this.ensureConnectionAccess(viewer, dto.provider);
 
     const now = new Date().toISOString();
     const repository: StoredRepository = {
@@ -121,8 +125,15 @@ export class GitService {
     return repository;
   }
 
-  async commit(dto: CreateCommitDto): Promise<StoredGitCommit> {
-    const repository = await this.getRepositoryForProject(dto.projectId);
+  async commit(
+    viewer: JwtPayload,
+    dto: CreateCommitDto,
+  ): Promise<StoredGitCommit> {
+    const repository = await this.getRepositoryForProject(
+      viewer,
+      dto.projectId,
+    );
+    await this.ensureConnectionAccess(viewer, repository.provider);
     const now = new Date().toISOString();
     const commit: StoredGitCommit = {
       id: randomUUID(),
@@ -163,10 +174,12 @@ export class GitService {
   }
 
   async push(
+    viewer: JwtPayload,
     projectId: string,
     branch = 'main',
   ): Promise<{ status: string; detail: string }> {
-    const repository = await this.getRepositoryForProject(projectId);
+    const repository = await this.getRepositoryForProject(viewer, projectId);
+    await this.ensureConnectionAccess(viewer, repository.provider);
     const detail = this.providerAdapters
       .get(repository.provider)
       .sync('push', repository.name, branch);
@@ -201,15 +214,17 @@ export class GitService {
   }
 
   async pull(
+    viewer: JwtPayload,
     projectId: string,
     branch = 'main',
   ): Promise<{ status: string; detail: string }> {
-    const repository = await this.getRepositoryForProject(projectId);
+    const repository = await this.getRepositoryForProject(viewer, projectId);
+    await this.ensureConnectionAccess(viewer, repository.provider);
     const detail = this.providerAdapters
       .get(repository.provider)
       .sync('pull', repository.name, branch);
 
-    const alertChance = Math.random() < 0.15;
+    const hasMergeConflict = detail.toLowerCase().includes('conflict');
     await this.databaseService.mutate((draft) => {
       const repo = draft.repositories.find(
         (entry) => entry.id === repository.id,
@@ -230,7 +245,7 @@ export class GitService {
       };
       draft.projectActivities.unshift(activity);
 
-      if (alertChance) {
+      if (hasMergeConflict) {
         const alert: StoredProjectAlert = {
           id: randomUUID(),
           projectId,
@@ -254,11 +269,19 @@ export class GitService {
     return { status: 'ok', detail };
   }
 
-  async history(projectId?: string): Promise<StoredGitCommit[]> {
+  async history(
+    viewer: JwtPayload,
+    projectId?: string,
+  ): Promise<StoredGitCommit[]> {
     const commits = await this.databaseService.list('gitCommits');
     if (projectId == null) {
-      return commits.slice(0, 200);
+      const accessibleProjectIds =
+        await this.projectsService.listAccessibleProjectIds(viewer);
+      return commits
+        .filter((entry) => accessibleProjectIds.has(entry.projectId))
+        .slice(0, 200);
     }
+    await this.projectsService.findOne(projectId, viewer);
     return commits
       .filter((entry) => entry.projectId === projectId)
       .slice(0, 200);
@@ -269,8 +292,10 @@ export class GitService {
   }
 
   private async getRepositoryForProject(
+    viewer: JwtPayload,
     projectId: string,
   ): Promise<StoredRepository> {
+    await this.projectsService.findOne(projectId, viewer);
     const repository = (await this.databaseService.list('repositories')).find(
       (entry) => entry.projectId === projectId,
     );
@@ -283,9 +308,9 @@ export class GitService {
   }
 
   private encrypt(secretValue: string): string {
-    const secret =
-      this.configService.get<string>('GIT_CREDENTIAL_SECRET') ??
-      'aio-git-secret';
+    const secret = this.configService.getOrThrow<string>(
+      'GIT_CREDENTIAL_SECRET',
+    );
     const key = createHash('sha256').update(secret).digest();
     const iv = randomBytes(12);
     const cipher = createCipheriv('aes-256-gcm', key, iv);
@@ -295,5 +320,29 @@ export class GitService {
     ]);
     const tag = cipher.getAuthTag();
     return `${iv.toString('base64')}.${tag.toString('base64')}.${encrypted.toString('base64')}`;
+  }
+
+  private async ensureConnectionAccess(
+    viewer: JwtPayload,
+    provider: GitProvider,
+  ): Promise<void> {
+    if (viewer.roles.includes('admin')) {
+      return;
+    }
+
+    const now = Date.now();
+    const connections = await this.databaseService.list('gitConnections');
+    const hasValidConnection = connections.some(
+      (connection) =>
+        connection.userId === viewer.sub &&
+        connection.provider === provider &&
+        new Date(connection.expiresAt).getTime() > now,
+    );
+
+    if (!hasValidConnection) {
+      throw new UnauthorizedException(
+        `No active ${provider} connection is available for this user.`,
+      );
+    }
   }
 }

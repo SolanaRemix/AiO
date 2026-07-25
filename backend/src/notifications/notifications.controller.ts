@@ -6,10 +6,13 @@ import {
   Patch,
   Post,
   Query,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { type Request } from 'express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { type JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 import { CreateAlertDto } from './dto/create-alert.dto';
 import { NotificationsService } from './notifications.service';
 
@@ -22,19 +25,28 @@ export class NotificationsController {
 
   @Get()
   @ApiOperation({ summary: 'List dashboard alerts and notifications' })
-  list(@Query('projectId') projectId?: string) {
-    return this.notificationsService.listAlerts(projectId);
+  list(
+    @Req() request: Request & { user: JwtPayload },
+    @Query('projectId') projectId?: string,
+  ) {
+    return this.notificationsService.listAlerts(request.user, projectId);
   }
 
   @Post()
   @ApiOperation({ summary: 'Create an enterprise project alert' })
-  create(@Body() dto: CreateAlertDto) {
-    return this.notificationsService.createAlert(dto);
+  create(
+    @Req() request: Request & { user: JwtPayload },
+    @Body() dto: CreateAlertDto,
+  ) {
+    return this.notificationsService.createAlert(request.user, dto);
   }
 
   @Patch(':id/resolve')
   @ApiOperation({ summary: 'Resolve an open alert' })
-  resolve(@Param('id') id: string) {
-    return this.notificationsService.resolveAlert(id);
+  resolve(
+    @Req() request: Request & { user: JwtPayload },
+    @Param('id') id: string,
+  ) {
+    return this.notificationsService.resolveAlert(request.user, id);
   }
 }

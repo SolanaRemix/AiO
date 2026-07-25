@@ -422,6 +422,9 @@ export class AuthService implements OnModuleInit {
     if (activeSession == null || activeSession.csrfToken !== csrfToken) {
       throw new UnauthorizedException('Invalid CSRF token.');
     }
+    if (activeSession.userId !== payload.sub) {
+      throw new UnauthorizedException('Session does not belong to this user.');
+    }
 
     await this.databaseService.mutate((draft) => {
       const session = draft.sessions.find((entry) => entry.id === sessionId);
@@ -548,6 +551,7 @@ export class AuthService implements OnModuleInit {
         sub: user.id,
         email: user.email,
         roles: user.roles,
+        workspaceId: user.workspaceId,
         sessionId,
       },
       { expiresIn: ACCESS_TOKEN_TTL_SECONDS },
@@ -625,6 +629,7 @@ export class AuthService implements OnModuleInit {
         sub: user.id,
         email: user.email,
         roles: user.roles,
+        workspaceId: user.workspaceId,
         sessionId: session.id,
       },
       { expiresIn: ACCESS_TOKEN_TTL_SECONDS },

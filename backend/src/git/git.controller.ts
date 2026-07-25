@@ -8,7 +8,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { Request } from 'express';
+import { type Request } from 'express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { type JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 import { ConnectGitDto } from './dto/connect-git.dto';
@@ -41,31 +41,46 @@ export class GitController {
 
   @Post('init')
   @ApiOperation({ summary: 'Initialize repository and branch configuration' })
-  init(@Body() dto: InitRepoDto) {
-    return this.gitService.initRepository(dto);
+  init(
+    @Req() request: Request & { user: JwtPayload },
+    @Body() dto: InitRepoDto,
+  ) {
+    return this.gitService.initRepository(request.user, dto);
   }
 
   @Post('commit')
   @ApiOperation({ summary: 'Create a commit in the integrated workspace' })
-  commit(@Body() dto: CreateCommitDto) {
-    return this.gitService.commit(dto);
+  commit(
+    @Req() request: Request & { user: JwtPayload },
+    @Body() dto: CreateCommitDto,
+  ) {
+    return this.gitService.commit(request.user, dto);
   }
 
   @Post('push')
   @ApiOperation({ summary: 'Push local workspace changes to provider' })
-  push(@Body() dto: SyncGitDto) {
-    return this.gitService.push(dto.projectId, dto.branch);
+  push(
+    @Req() request: Request & { user: JwtPayload },
+    @Body() dto: SyncGitDto,
+  ) {
+    return this.gitService.push(request.user, dto.projectId, dto.branch);
   }
 
   @Post('pull')
   @ApiOperation({ summary: 'Pull remote updates from provider' })
-  pull(@Body() dto: SyncGitDto) {
-    return this.gitService.pull(dto.projectId, dto.branch);
+  pull(
+    @Req() request: Request & { user: JwtPayload },
+    @Body() dto: SyncGitDto,
+  ) {
+    return this.gitService.pull(request.user, dto.projectId, dto.branch);
   }
 
   @Get('history')
   @ApiOperation({ summary: 'View commit history in workspace' })
-  history(@Query('projectId') projectId?: string) {
-    return this.gitService.history(projectId);
+  history(
+    @Req() request: Request & { user: JwtPayload },
+    @Query('projectId') projectId?: string,
+  ) {
+    return this.gitService.history(request.user, projectId);
   }
 }

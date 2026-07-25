@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { type JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 import { DatabaseService } from '../database/database.service';
 import { ProjectsService } from '../projects/projects.service';
 import { CreateAlertDto } from './dto/create-alert.dto';
@@ -10,7 +11,8 @@ export class NotificationsService {
     private readonly databaseService: DatabaseService,
   ) {}
 
-  createAlert(dto: CreateAlertDto) {
+  async createAlert(user: JwtPayload, dto: CreateAlertDto) {
+    await this.projectsService.findOne(dto.projectId, user);
     return this.projectsService.createAlert(dto.projectId, {
       type: dto.type,
       severity: dto.severity,
@@ -18,33 +20,47 @@ export class NotificationsService {
     });
   }
 
-  async listAlerts(projectId?: string) {
+  async listAlerts(user: JwtPayload, projectId?: string) {
     const alerts = await this.databaseService.list('projectAlerts');
-    return alerts.filter((entry) =>
-      projectId == null ? true : entry.projectId === projectId,
-    );
+    if (projectId != null) {
+      await this.projectsService.findOne(projectId, user);
+      return alerts.filter((entry) => entry.projectId === projectId);
+    }
+
+    const projectIds =
+      await this.projectsService.listAccessibleProjectIds(user);
+    return alerts.filter((entry) => projectIds.has(entry.projectId));
   }
 
-  async resolveAlert(id: string) {
+  async resolveAlert(user: JwtPayload, id: string) {
+    const alert = (await this.databaseService.list('projectAlerts')).find(
+      (entry) => entry.id === id,
+    );
+    if (alert == null) {
+      throw new NotFoundException('Alert not found.');
+    }
+    await this.projectsService.findOne(alert.projectId, user);
+
     return this.databaseService.mutate((draft) => {
-      const alert = draft.projectAlerts.find((entry) => entry.id === id);
-      if (alert == null) {
+      const mutableAlert = draft.projectAlerts.find((entry) => entry.id === id);
+      if (mutableAlert == null) {
         throw new NotFoundException('Alert not found.');
       }
-      alert.status = 'resolved';
-      alert.resolvedAt = new Date().toISOString();
+      mutableAlert.status = 'resolved';
+      mutableAlert.resolvedAt = new Date().toISOString();
 
       const project = draft.projects.find(
-        (entry) => entry.id === alert.projectId,
+        (entry) => entry.id === mutableAlert.projectId,
       );
       if (project != null) {
         project.alerts = draft.projectAlerts.filter(
           (entry) =>
-            entry.projectId === alert.projectId && entry.status === 'open',
+            entry.projectId === mutableAlert.projectId &&
+            entry.status === 'open',
         ).length;
       }
 
-      return alert;
+      return mutableAlert;
     });
   }
 }

@@ -141,6 +141,44 @@ describe('AppController (e2e)', () => {
       .expect(401);
   });
 
+  it('rejects attempts to logout another user session', async () => {
+    const userOne = await request(app.getHttpServer())
+      .post('/api/auth/register')
+      .send({
+        name: 'Session Owner One',
+        email: `session.one.${randomUUID()}@aio.local`,
+        password: 'StrongPassword123!',
+      })
+      .expect(201);
+    const userTwo = await request(app.getHttpServer())
+      .post('/api/auth/register')
+      .send({
+        name: 'Session Owner Two',
+        email: `session.two.${randomUUID()}@aio.local`,
+        password: 'StrongPassword123!',
+      })
+      .expect(201);
+
+    await request(app.getHttpServer())
+      .post('/api/auth/logout')
+      .set(
+        'Authorization',
+        'Bearer '.concat((userOne.body as { accessToken: string }).accessToken),
+      )
+      .set('x-csrf-token', (userTwo.body as { csrfToken: string }).csrfToken)
+      .send({
+        refreshToken: (userTwo.body as { refreshToken: string }).refreshToken,
+      })
+      .expect(401);
+
+    await request(app.getHttpServer())
+      .post('/api/auth/refresh')
+      .send({
+        refreshToken: (userTwo.body as { refreshToken: string }).refreshToken,
+      })
+      .expect(201);
+  });
+
   it('creates and lists projects through the authenticated /v1 gateway', async () => {
     const server = app.getHttpServer();
 
@@ -202,6 +240,43 @@ describe('AppController (e2e)', () => {
     expect((dashboard.body as { cards: Array<{ id: string }> }).cards).toEqual(
       expect.arrayContaining([expect.objectContaining({ id: projectId })]),
     );
+  });
+
+  it('records metadata activity when lifecycle is unchanged', async () => {
+    const createResponse = await request(app.getHttpServer())
+      .post('/api/projects')
+      .set('Authorization', 'Bearer '.concat(accessToken))
+      .send({
+        name: 'Metadata Project',
+        description: 'Project metadata update activity validation.',
+      })
+      .expect(201);
+    const projectId = (createResponse.body as { id: string }).id;
+
+    await request(app.getHttpServer())
+      .put(`/api/projects/${projectId}`)
+      .set('Authorization', 'Bearer '.concat(accessToken))
+      .send({
+        name: 'Metadata Project Updated',
+      })
+      .expect(200);
+
+    const dashboardResponse = await request(app.getHttpServer())
+      .get('/api/projects/dashboard')
+      .set('Authorization', 'Bearer '.concat(accessToken))
+      .expect(200);
+
+    const timeline = (
+      dashboardResponse.body as {
+        timeline: Array<{ projectId: string; detail: string }>;
+      }
+    ).timeline;
+    const entry = timeline.find(
+      (item) =>
+        item.projectId === projectId &&
+        item.detail.includes('Project metadata'),
+    );
+    expect(entry?.detail).toBe('Project metadata updated.');
   });
 
   it('initializes repository and executes git commit/push/pull/history flow', async () => {
@@ -267,6 +342,115 @@ describe('AppController (e2e)', () => {
     expect(
       (historyResponse.body as Array<{ projectId: string }>).length,
     ).toBeGreaterThan(0);
+  });
+
+  it('enforces enterprise project ownership across projects, notifications, and git', async () => {
+    const ownerLogin = await request(app.getHttpServer())
+      .post('/api/auth/register')
+      .send({
+        name: 'Owner User',
+        email: `owner.${randomUUID()}@aio.local`,
+        password: 'StrongPassword123!',
+      })
+      .expect(201);
+    const viewerLogin = await request(app.getHttpServer())
+      .post('/api/auth/register')
+      .send({
+        name: 'Viewer User',
+        email: `viewer.${randomUUID()}@aio.local`,
+        password: 'StrongPassword123!',
+      })
+      .expect(201);
+
+    const ownerToken = (ownerLogin.body as { accessToken: string }).accessToken;
+    const viewerToken = (viewerLogin.body as { accessToken: string })
+      .accessToken;
+
+    const projectResponse = await request(app.getHttpServer())
+      .post('/api/projects')
+      .set('Authorization', 'Bearer '.concat(ownerToken))
+      .send({
+        name: 'Owned Project',
+        description: 'Owner-only project authorization validation.',
+      })
+      .expect(201);
+    const projectId = (projectResponse.body as { id: string }).id;
+
+    await request(app.getHttpServer())
+      .post('/api/git/connect')
+      .set('Authorization', 'Bearer '.concat(ownerToken))
+      .send({
+        provider: 'github',
+        accessToken: 'gho_owner_token_123456',
+      })
+      .expect(201);
+
+    await request(app.getHttpServer())
+      .post('/api/git/init')
+      .set('Authorization', 'Bearer '.concat(ownerToken))
+      .send({
+        projectId,
+        provider: 'github',
+        repositoryName: 'owner-only-repo',
+      })
+      .expect(201);
+
+    await request(app.getHttpServer())
+      .post('/api/notifications')
+      .set('Authorization', 'Bearer '.concat(ownerToken))
+      .send({
+        projectId,
+        type: 'build_failure',
+        severity: 'high',
+        message: 'Owner-visible alert',
+      })
+      .expect(201);
+
+    await request(app.getHttpServer())
+      .get(`/api/projects/${projectId}`)
+      .set('Authorization', 'Bearer '.concat(viewerToken))
+      .expect(403);
+
+    const viewerProjects = await request(app.getHttpServer())
+      .get('/api/projects')
+      .set('Authorization', 'Bearer '.concat(viewerToken))
+      .expect(200);
+    expect(viewerProjects.body).toEqual([]);
+
+    await request(app.getHttpServer())
+      .get('/api/notifications')
+      .query({ projectId })
+      .set('Authorization', 'Bearer '.concat(viewerToken))
+      .expect(403);
+
+    await request(app.getHttpServer())
+      .post('/api/git/pull')
+      .set('Authorization', 'Bearer '.concat(viewerToken))
+      .send({ projectId, branch: 'main' })
+      .expect(403);
+  });
+
+  it('limits /api/audit to admin users', async () => {
+    const standardUser = await request(app.getHttpServer())
+      .post('/api/auth/register')
+      .send({
+        name: 'Standard User',
+        email: `standard.${randomUUID()}@aio.local`,
+        password: 'StrongPassword123!',
+      })
+      .expect(201);
+    const userToken = (standardUser.body as { accessToken: string })
+      .accessToken;
+
+    await request(app.getHttpServer())
+      .get('/api/audit')
+      .set('Authorization', 'Bearer '.concat(userToken))
+      .expect(403);
+
+    await request(app.getHttpServer())
+      .get('/api/audit')
+      .set('Authorization', 'Bearer '.concat(accessToken))
+      .expect(200);
   });
 
   it('runs workflows through the authenticated /v1 gateway', async () => {
