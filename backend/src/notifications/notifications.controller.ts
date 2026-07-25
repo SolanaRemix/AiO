@@ -1,9 +1,12 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CreateAlertDto } from './dto/create-alert.dto';
 import { NotificationsService } from './notifications.service';
 
 @ApiTags('notifications')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @Controller('api/notifications')
 export class NotificationsController {
   constructor(private readonly notificationsService: NotificationsService) {}

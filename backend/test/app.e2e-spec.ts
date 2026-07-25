@@ -168,6 +168,7 @@ describe('AppController (e2e)', () => {
   it('updates enterprise project lifecycle and loads dashboard cards', async () => {
     const createResponse = await request(app.getHttpServer())
       .post('/api/projects')
+      .set('Authorization', 'Bearer '.concat(accessToken))
       .send({
         name: 'Lifecycle Project',
         description: 'Project lifecycle for enterprise dashboard checks.',
@@ -178,6 +179,7 @@ describe('AppController (e2e)', () => {
 
     await request(app.getHttpServer())
       .put(`/api/projects/${projectId}`)
+      .set('Authorization', 'Bearer '.concat(accessToken))
       .send({
         lifecycleState: 'Architecture',
         completionPercentage: 30,
@@ -187,6 +189,7 @@ describe('AppController (e2e)', () => {
 
     const dashboard = await request(app.getHttpServer())
       .get('/api/projects/dashboard')
+      .set('Authorization', 'Bearer '.concat(accessToken))
       .expect(200);
 
     expect((dashboard.body as { cards: Array<{ id: string }> }).cards).toEqual(
@@ -197,6 +200,7 @@ describe('AppController (e2e)', () => {
   it('initializes repository and executes git commit/push/pull/history flow', async () => {
     const projectResponse = await request(app.getHttpServer())
       .post('/api/projects')
+      .set('Authorization', 'Bearer '.concat(accessToken))
       .send({
         name: 'Git Workspace Project',
         description: 'Project for native git workspace API testing.',
