@@ -1,4 +1,5 @@
 import {
+  InternalServerErrorException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -224,7 +225,11 @@ export class GitService {
       .get(repository.provider)
       .sync('pull', repository.name, branch);
 
-    const hasMergeConflict = detail.toLowerCase().includes('conflict');
+    const normalizedSyncDetail = detail.toUpperCase();
+    const hasMergeConflict =
+      normalizedSyncDetail.includes('CONFLICT (') ||
+      normalizedSyncDetail.includes('MERGE CONFLICT') ||
+      normalizedSyncDetail.includes('AUTOMATIC MERGE FAILED');
     await this.databaseService.mutate((draft) => {
       const repo = draft.repositories.find(
         (entry) => entry.id === repository.id,
@@ -308,9 +313,12 @@ export class GitService {
   }
 
   private encrypt(secretValue: string): string {
-    const secret = this.configService.getOrThrow<string>(
-      'GIT_CREDENTIAL_SECRET',
-    );
+    const secret = this.configService.get<string>('GIT_CREDENTIAL_SECRET');
+    if (secret == null || secret.trim().length === 0) {
+      throw new InternalServerErrorException(
+        'GIT_CREDENTIAL_SECRET environment variable is not configured. This must be set to enable Git credential encryption.',
+      );
+    }
     const key = createHash('sha256').update(secret).digest();
     const iv = randomBytes(12);
     const cipher = createCipheriv('aes-256-gcm', key, iv);

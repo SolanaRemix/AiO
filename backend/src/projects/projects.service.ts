@@ -97,14 +97,15 @@ export class ProjectsService {
     dto: UpdateProjectDto,
     viewer?: JwtPayload,
   ): Promise<ProjectEntity> {
-    const existing = await this.findOne(id, viewer);
-    const previousLifecycle = existing.lifecycleState;
+    await this.findOne(id, viewer);
 
-    const updated = await this.databaseService.mutate((draft) => {
+    const updatedState = await this.databaseService.mutate((draft) => {
       const project = draft.projects.find((candidate) => candidate.id === id);
       if (project == null) {
         throw new NotFoundException(`Project with ID ${id} was not found.`);
       }
+      const previousLifecycle = project.lifecycleState;
+      const previousDeploymentStatus = project.deploymentStatus;
 
       if (dto.name != null) project.name = dto.name;
       if (dto.description != null) project.description = dto.description;
@@ -147,18 +148,29 @@ export class ProjectsService {
         }
       }
 
-      return project;
+      return {
+        project,
+        previousLifecycle,
+        previousDeploymentStatus,
+      };
     });
+    const {
+      project: updated,
+      previousLifecycle,
+      previousDeploymentStatus,
+    } = updatedState;
+
+    const lifecycleDetail =
+      dto.lifecycleState != null && dto.lifecycleState !== previousLifecycle
+        ? `Project lifecycle moved from ${previousLifecycle} to ${updated.lifecycleState}.`
+        : 'Project metadata updated.';
 
     await this.recordActivity({
       projectId: id,
       actor: 'system',
       action: 'project.updated',
       category: 'workflow',
-      detail:
-        dto.lifecycleState != null && dto.lifecycleState !== previousLifecycle
-          ? `Project lifecycle moved ${previousLifecycle} → ${updated.lifecycleState}.`
-          : 'Project metadata updated.',
+      detail: lifecycleDetail,
     });
 
     if (updated.gitStatus === 'conflict') {
@@ -170,7 +182,7 @@ export class ProjectsService {
     }
 
     if (
-      existing.deploymentStatus !== 'failed' &&
+      previousDeploymentStatus !== 'failed' &&
       updated.deploymentStatus === 'failed'
     ) {
       await this.createAlert(id, {
