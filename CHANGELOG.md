@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.0.4 Enterprise
+
+- Added enterprise identity APIs with registration, OAuth provider support (Google/GitHub/Microsoft/Enterprise SSO), refresh token rotation, secure logout, session persistence, and profile-ready JWT claims
+- Added profile and preferences APIs for avatar/name/email management, AI settings, notification controls, and security preferences
+- Expanded project APIs with enterprise lifecycle states, completion tracking, dashboard data, alerts, timeline activity, and project update operations
+- Added integrated Git workspace backend with provider adapter layer (GitHub/GitLab/Bitbucket), connect/init/commit/push/pull/history endpoints, encrypted credentials, and milestone commit automation
+- Added notifications and audit endpoints for alert management and security event visibility
+- Added frontend enterprise surfaces for Dashboard, Workflows, Git Workspace, Settings, Login/Register, Profile, Notifications, and Security Center
+- Updated documentation and package versions for AiO Enterprise v1.0.4
+
 ## v1.0.3 Stable
 
 - Added unified AI Integration Layer with a Provider Manager supporting registration, CRUD management, enable/disable, priority, health monitoring, latency tracking, cost estimation, usage analytics, automatic retries, fallback, and circuit breaker

@@ -42,14 +42,14 @@ export type FileNode = {
 };
 
 export const navigationItems: NavItem[] = [
-  { label: "Home", href: "/", description: "Overview and launchpad" },
-  { label: "Workspace", href: "/workspace", description: "Collaborative build surface" },
+  { label: "Dashboard", href: "/", description: "Project intelligence overview" },
   { label: "Projects", href: "/projects", description: "Program portfolio and delivery" },
+  { label: "Workflows", href: "/workflows", description: "Execution pipelines and gates" },
   { label: "Knowledge", href: "/knowledge", description: "Indexed docs and research" },
-  { label: "Memory", href: "/memory", description: "Long-term execution memory" },
   { label: "Agents", href: "/agents", description: "Distributed agent operations" },
-  { label: "Deploy", href: "/deploy", description: "Build, preview, and release pipelines" },
-  { label: "Providers", href: "/providers", description: "AI provider registry and connectors" },
+  { label: "Git", href: "/git", description: "Native version control workspace" },
+  { label: "Deployments", href: "/deploy", description: "Build, preview, and release pipelines" },
+  { label: "Settings", href: "/settings", description: "Profile, preferences, and security" },
 ];
 
 export const examplePrompts = [
@@ -260,14 +260,9 @@ export const agentActivities = [
 
 export const contextSummaries: Record<string, { title: string; summary: string; tags: string[] }> = {
   "/": {
-    title: "Home context",
-    summary: "Create, inspect, and orchestrate enterprise workspaces from a single operating layer.",
-    tags: ["Prompting", "Templates", "Signals"],
-  },
-  "/workspace": {
-    title: "Workspace context",
-    summary: "Live execution room with files, tasks, memory, and deployment evidence in sync.",
-    tags: ["Execution", "Handoffs", "Artifacts"],
+    title: "Dashboard context",
+    summary: "Enterprise project command center with lifecycle, alerts, and activity telemetry.",
+    tags: ["Projects", "Alerts", "Intelligence"],
   },
   "/projects": {
     title: "Projects context",
@@ -279,25 +274,30 @@ export const contextSummaries: Record<string, { title: string; summary: string; 
     summary: "High-fidelity retrieval across docs, tickets, controls, and research artifacts.",
     tags: ["RAG", "Sources", "Freshness"],
   },
-  "/memory": {
-    title: "Memory context",
-    summary: "Persistent recall for decisions, incidents, customer signals, and reusable workflows.",
-    tags: ["Recall", "Persistence", "Confidence"],
+  "/workflows": {
+    title: "Workflows context",
+    summary: "Monitor orchestration flows, approvals, and execution quality gates.",
+    tags: ["Workflow", "Approvals", "Automation"],
   },
   "/agents": {
     title: "Agents context",
     summary: "Distributed specialists with live load, queues, latency, and outcome tracking.",
     tags: ["Swarms", "Observability", "Capacity"],
   },
+  "/git": {
+    title: "Git context",
+    summary: "Repository, branch, commit, and pull synchronization across providers.",
+    tags: ["GitHub", "GitLab", "Bitbucket"],
+  },
   "/deploy": {
     title: "Deploy context",
     summary: "Build, preview, and promote production deployments with rollback and environment control.",
     tags: ["CI/CD", "Rollback", "Environments"],
   },
-  "/providers": {
-    title: "Providers context",
-    summary: "Manage AI provider registry, connectors, routing priorities, and integration health.",
-    tags: ["Providers", "Connectors", "Routing"],
+  "/settings": {
+    title: "Settings context",
+    summary: "Manage profile, AI preferences, integrations, notifications, and security posture.",
+    tags: ["Identity", "Preferences", "Security"],
   },
 };
 

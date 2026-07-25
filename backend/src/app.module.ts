@@ -10,14 +10,18 @@ import { FilesModule } from './files/files.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AgentsModule } from './agents/agents.module';
+import { AuditModule } from './audit/audit.module';
 import { AuthModule } from './auth/auth.module';
 import { HealthModule } from './health/health.module';
 import { KnowledgeEngineModule } from './knowledge-engine/knowledge-engine.module';
 import { MemoryModule } from './memory/memory.module';
 import { ModelRouterModule } from './model-router/model-router.module';
 import { MonitoringModule } from './monitoring/monitoring.module';
+import { NotificationsModule } from './notifications/notifications.module';
 import { OrchestratorModule } from './orchestrator/orchestrator.module';
+import { ProfileModule } from './profile/profile.module';
 import { ProjectsModule } from './projects/projects.module';
+import { GitModule } from './git/git.module';
 import { V1Module } from './v1/v1.module';
 import { WorkflowsModule } from './workflows/workflows.module';
 
@@ -39,13 +43,17 @@ import { WorkflowsModule } from './workflows/workflows.module';
       },
     ]),
     AuthModule,
+    AuditModule,
+    ProfileModule,
     HealthModule,
     ProjectsModule,
+    GitModule,
     MemoryModule,
     AgentsModule,
     ModelRouterModule,
     KnowledgeEngineModule,
     OrchestratorModule,
+    NotificationsModule,
     FilesModule,
     DeployModule,
     WorkflowsModule,

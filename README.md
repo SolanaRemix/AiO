@@ -1,6 +1,6 @@
-# AiO Enterprise v1.0.3 Stable
+# AiO Enterprise v1.0.4 Enterprise
 
-AiO is a monorepo AI operating system foundation with a Next.js enterprise workspace frontend and a NestJS backend that provides authentication, provider routing, orchestration, workflows, knowledge retrieval, memory, and project APIs.
+AiO is a monorepo AI operating system foundation with a Next.js enterprise workspace frontend and a NestJS backend that provides enterprise authentication, project intelligence dashboards, native Git workspace APIs, provider routing, orchestration, workflows, knowledge retrieval, memory, and project APIs.
 
 ## Monorepo layout
 
@@ -55,7 +55,10 @@ npm run test:e2e --prefix backend
 
 ## Architecture overview
 
-- Auth: JWT login plus optional API key access for `/v1/*`
+- Auth: enterprise register/login/logout/refresh/session plus optional API key access for `/v1/*`
+- Profile: user profile and preferences management at `/api/profile` and `/api/preferences`
+- Project intelligence: enterprise project lifecycle, alerts, timeline, and dashboard at `/api/projects/dashboard`
+- Git workspace: provider adapters and repository lifecycle at `/api/git/*`
 - Provider routing: persistent provider registry with fallback-aware AI routing
 - Runtime: orchestration, workflow execution, agent planning, project and memory persistence
 - Knowledge: document ingest, lexical/vector-style search, and RAG-style query composition

@@ -62,5 +62,10 @@ export function validateEnvironment(
         : join(process.cwd(), 'data', 'aio-enterprise.json'),
     AIO_API_KEYS:
       typeof config.AIO_API_KEYS === 'string' ? config.AIO_API_KEYS : '',
+    GIT_CREDENTIAL_SECRET:
+      typeof config.GIT_CREDENTIAL_SECRET === 'string' &&
+      config.GIT_CREDENTIAL_SECRET.trim().length > 0
+        ? config.GIT_CREDENTIAL_SECRET.trim()
+        : 'aio-git-development-secret',
   };
 }

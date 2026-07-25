@@ -12,6 +12,8 @@ describe('AppController (e2e)', () => {
   let app: INestApplication<App>;
   let dataFile: string;
   let accessToken: string;
+  let refreshToken: string;
+  let csrfToken: string;
 
   beforeEach(async () => {
     dataFile = join(process.cwd(), 'tmp', `${randomUUID()}.json`);
@@ -45,6 +47,8 @@ describe('AppController (e2e)', () => {
       })
       .expect(201);
     accessToken = (loginResponse.body as { accessToken: string }).accessToken;
+    refreshToken = (loginResponse.body as { refreshToken: string }).refreshToken;
+    csrfToken = (loginResponse.body as { csrfToken: string }).csrfToken;
   });
 
   afterEach(async () => {
@@ -64,6 +68,69 @@ describe('AppController (e2e)', () => {
     return request(app.getHttpServer())
       .post('/v1/projects')
       .send({})
+      .expect(401);
+  });
+
+  it('registers and refreshes an enterprise session', async () => {
+    const registerResponse = await request(app.getHttpServer())
+      .post('/api/auth/register')
+      .send({
+        name: 'Enterprise User',
+        email: 'enterprise.user@aio.local',
+        password: 'StrongPassword123!',
+        device: 'e2e-suite',
+        rememberDevice: true,
+      })
+      .expect(201);
+
+    const body = registerResponse.body as {
+      accessToken: string;
+      refreshToken: string;
+      user: { email: string; workspaceId: string };
+    };
+    expect(body.user.email).toBe('enterprise.user@aio.local');
+    expect(body.user.workspaceId).toBeDefined();
+
+    const refreshResponse = await request(app.getHttpServer())
+      .post('/api/auth/refresh')
+      .send({ refreshToken: body.refreshToken })
+      .expect(201);
+
+    expect((refreshResponse.body as { accessToken: string }).accessToken).toBeDefined();
+  });
+
+  it('supports OAuth login and session retrieval', async () => {
+    const oauthResponse = await request(app.getHttpServer())
+      .post('/api/auth/oauth/login')
+      .send({
+        provider: 'github',
+        oauthCode: 'oauth-code-123456',
+        providerAccountId: 'github-uo-2001',
+        email: 'oauth.user@aio.local',
+        name: 'OAuth User',
+      })
+      .expect(201);
+
+    const oauthToken = (oauthResponse.body as { accessToken: string }).accessToken;
+    const sessionResponse = await request(app.getHttpServer())
+      .get('/api/auth/session')
+      .set('Authorization', 'Bearer '.concat(oauthToken))
+      .expect(200);
+
+    expect((sessionResponse.body as { email: string }).email).toBe('oauth.user@aio.local');
+  });
+
+  it('logs out a session using csrf protection', async () => {
+    await request(app.getHttpServer())
+      .post('/api/auth/logout')
+      .set('Authorization', 'Bearer '.concat(accessToken))
+      .set('x-csrf-token', csrfToken)
+      .send({ refreshToken })
+      .expect(201);
+
+    await request(app.getHttpServer())
+      .post('/api/auth/refresh')
+      .send({ refreshToken })
       .expect(401);
   });
 
@@ -96,6 +163,97 @@ describe('AppController (e2e)', () => {
         }),
       ]),
     );
+  });
+
+  it('updates enterprise project lifecycle and loads dashboard cards', async () => {
+    const createResponse = await request(app.getHttpServer())
+      .post('/api/projects')
+      .send({
+        name: 'Lifecycle Project',
+        description: 'Project lifecycle for enterprise dashboard checks.',
+      })
+      .expect(201);
+
+    const projectId = (createResponse.body as { id: string }).id;
+
+    await request(app.getHttpServer())
+      .put(`/api/projects/${projectId}`)
+      .send({
+        lifecycleState: 'Architecture',
+        completionPercentage: 30,
+        pipelineStage: 'Solution architecture',
+      })
+      .expect(200);
+
+    const dashboard = await request(app.getHttpServer())
+      .get('/api/projects/dashboard')
+      .expect(200);
+
+    expect((dashboard.body as { cards: Array<{ id: string }> }).cards).toEqual(
+      expect.arrayContaining([expect.objectContaining({ id: projectId })]),
+    );
+  });
+
+  it('initializes repository and executes git commit/push/pull/history flow', async () => {
+    const projectResponse = await request(app.getHttpServer())
+      .post('/api/projects')
+      .send({
+        name: 'Git Workspace Project',
+        description: 'Project for native git workspace API testing.',
+      })
+      .expect(201);
+    const projectId = (projectResponse.body as { id: string }).id;
+
+    await request(app.getHttpServer())
+      .post('/api/git/connect')
+      .set('Authorization', 'Bearer '.concat(accessToken))
+      .send({
+        provider: 'github',
+        accessToken: 'gho_test_token_123456',
+        scope: ['repo', 'workflow'],
+      })
+      .expect(201);
+
+    await request(app.getHttpServer())
+      .post('/api/git/init')
+      .set('Authorization', 'Bearer '.concat(accessToken))
+      .send({
+        projectId,
+        provider: 'github',
+        repositoryName: 'aio-enterprise-test',
+        defaultBranch: 'main',
+      })
+      .expect(201);
+
+    await request(app.getHttpServer())
+      .post('/api/git/commit')
+      .set('Authorization', 'Bearer '.concat(accessToken))
+      .send({
+        projectId,
+        message: 'feat: enterprise auth completed',
+        validation: 'passed',
+      })
+      .expect(201);
+
+    await request(app.getHttpServer())
+      .post('/api/git/push')
+      .set('Authorization', 'Bearer '.concat(accessToken))
+      .send({ projectId, branch: 'main' })
+      .expect(201);
+
+    await request(app.getHttpServer())
+      .post('/api/git/pull')
+      .set('Authorization', 'Bearer '.concat(accessToken))
+      .send({ projectId, branch: 'main' })
+      .expect(201);
+
+    const historyResponse = await request(app.getHttpServer())
+      .get('/api/git/history')
+      .query({ projectId })
+      .set('Authorization', 'Bearer '.concat(accessToken))
+      .expect(200);
+
+    expect((historyResponse.body as Array<{ projectId: string }>).length).toBeGreaterThan(0);
   });
 
   it('runs workflows through the authenticated /v1 gateway', async () => {
