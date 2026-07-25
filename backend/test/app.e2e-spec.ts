@@ -73,11 +73,12 @@ describe('AppController (e2e)', () => {
   });
 
   it('registers and refreshes an enterprise session', async () => {
+    const email = `enterprise.user.${randomUUID()}@aio.local`;
     const registerResponse = await request(app.getHttpServer())
       .post('/api/auth/register')
       .send({
         name: 'Enterprise User',
-        email: 'enterprise.user@aio.local',
+        email,
         password: 'StrongPassword123!',
         device: 'e2e-suite',
         rememberDevice: true,
@@ -89,7 +90,7 @@ describe('AppController (e2e)', () => {
       refreshToken: string;
       user: { email: string; workspaceId: string };
     };
-    expect(body.user.email).toBe('enterprise.user@aio.local');
+    expect(body.user.email).toBe(email);
     expect(body.user.workspaceId).toBeDefined();
 
     const refreshResponse = await request(app.getHttpServer())

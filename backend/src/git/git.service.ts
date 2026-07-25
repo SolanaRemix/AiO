@@ -82,7 +82,7 @@ export class GitService {
       name: dto.repositoryName,
       defaultBranch: dto.defaultBranch ?? 'main',
       branches:
-        dto.branches?.length != null && (dto.branches?.length ?? 0) > 0
+        dto.branches != null && dto.branches.length > 0
           ? dto.branches
           : [dto.defaultBranch ?? 'main'],
       connected: true,

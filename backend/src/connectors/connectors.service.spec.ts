@@ -44,14 +44,24 @@ describe('ConnectorsService', () => {
 
   it('syncs a known connector', async () => {
     const connectors = service.list();
+    expect(connectors.length).toBeGreaterThan(0);
     const first = connectors[0];
+    expect(first).toBeDefined();
+    if (first == null) {
+      throw new Error('Expected at least one connector.');
+    }
     const result = await service.sync(first.id);
     expect(result.success).toBeDefined();
   });
 
   it('searches via a known connector', async () => {
     const connectors = service.list();
+    expect(connectors.length).toBeGreaterThan(0);
     const first = connectors[0];
+    expect(first).toBeDefined();
+    if (first == null) {
+      throw new Error('Expected at least one connector.');
+    }
     const result = await service.search(first.id, 'README');
     expect(result.success).toBeDefined();
   });

@@ -129,6 +129,7 @@ function normalizeUser(candidate: StoredUser): StoredUser {
   return {
     ...candidate,
     name: candidate.name ?? candidate.email,
+    // Legacy support: older persisted users stored `passwordEntry`; new schema uses `passwordHash`.
     passwordHash:
       candidate.passwordHash ??
       (candidate as StoredUser & { passwordEntry?: string }).passwordEntry ??
@@ -285,17 +286,18 @@ export class AuthService implements OnModuleInit {
     }
 
     if (user == null) {
-      user = buildDefaultUser(
+      const createdUser = buildDefaultUser(
         identity.email,
         identity.name ?? identity.email,
         randomUUID(),
       );
-      user.avatar = identity.avatar;
-      user.emailVerified = true;
+      createdUser.avatar = identity.avatar;
+      createdUser.emailVerified = true;
 
       await this.databaseService.mutate((draft) => {
-        draft.users.push(user!);
+        draft.users.push(createdUser);
       });
+      user = createdUser;
     }
 
     await this.databaseService.mutate((draft) => {

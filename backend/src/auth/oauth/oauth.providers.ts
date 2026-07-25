@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { randomBytes, randomUUID } from 'node:crypto';
 import {
   type OAuthIdentity,
   type OAuthProvider,
@@ -14,17 +14,15 @@ class StaticOAuthProvider implements OAuthProvider {
     name?: string;
     avatar?: string;
   }): OAuthIdentity {
-    const tokenSeed = `${this.name}:${input.providerAccountId}:${input.code}`;
+    const tokenSeed = `${this.name}:${input.providerAccountId}:${input.code}:${randomUUID()}`;
     return {
       provider: this.name,
       providerAccountId: input.providerAccountId,
       email: input.email,
       name: input.name,
       avatar: input.avatar,
-      accessToken: createHash('sha256').update(tokenSeed).digest('hex'),
-      refreshToken: createHash('sha256')
-        .update(`${tokenSeed}:refresh`)
-        .digest('hex'),
+      accessToken: randomBytes(32).toString('base64url'),
+      refreshToken: `${randomBytes(24).toString('base64url')}.${tokenSeed.length}`,
     };
   }
 }
