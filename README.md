@@ -1,4 +1,4 @@
-# AiO Enterprise v1.0.2 Stable
+# AiO Enterprise v1.0.3 Stable
 
 AiO is a monorepo AI operating system foundation with a Next.js enterprise workspace frontend and a NestJS backend that provides authentication, provider routing, orchestration, workflows, knowledge retrieval, memory, and project APIs.
 

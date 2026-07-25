@@ -1,6 +1,6 @@
 {
   "name": "aio-enterprise",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "AiO Enterprise - AI Operating System",
   "private": true,
   "scripts": {

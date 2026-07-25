@@ -191,6 +191,12 @@ export class ProviderRegistryService implements OnModuleInit {
     };
   }
 
+  async deleteProvider(id: string): Promise<void> {
+    await this.databaseService.mutate((draft) => {
+      draft.providers = draft.providers.filter((entry) => entry.id !== id);
+    });
+  }
+
   createCustomProvider(input: {
     name: string;
     type: AIProviderType;

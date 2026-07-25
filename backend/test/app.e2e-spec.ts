@@ -114,4 +114,117 @@ describe('AppController (e2e)', () => {
 
     expect((response.body as { status: string }).status).toBe('completed');
   });
+
+  it('validates a prompt via the agents SDK endpoint', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/agents/validate')
+      .send({ prompt: 'Build a secure authentication service for enterprise users.' })
+      .expect(201);
+
+    const body = response.body as { passed: boolean; issues: string[] };
+    expect(body.passed).toBe(true);
+    expect(body.issues).toHaveLength(0);
+  });
+
+  it('executes an agent, then learns and summarizes from the execution', async () => {
+    const execResponse = await request(app.getHttpServer())
+      .post('/agents/schedule')
+      .send({ prompt: 'Design a data ingestion pipeline for analytics.' })
+      .expect(201);
+
+    const plan = execResponse.body as { selectedAgents: string[] };
+    expect(plan.selectedAgents.length).toBeGreaterThan(0);
+
+    const runResponse = await request(app.getHttpServer())
+      .post('/v1/agents/run')
+      .set('Authorization', 'Bearer '.concat(accessToken))
+      .send({ prompt: 'Design a data ingestion pipeline for analytics.' })
+      .expect(201);
+
+    const execution = runResponse.body as { id: string; status: string };
+    expect(execution.status).toBe('completed');
+
+    const learnResponse = await request(app.getHttpServer())
+      .post(`/agents/${execution.id}/learn`)
+      .expect(201);
+
+    expect((learnResponse.body as { executionId: string }).executionId).toBe(execution.id);
+
+    const summarizeResponse = await request(app.getHttpServer())
+      .post(`/agents/${execution.id}/summarize`)
+      .expect(201);
+
+    expect((summarizeResponse.body as { executionId: string }).executionId).toBe(execution.id);
+  });
+
+  it('builds and deploys through /v1/deploy', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/v1/deploy')
+      .set('Authorization', 'Bearer '.concat(accessToken))
+      .send({
+        name: 'api-gateway',
+        projectId: 'proj-e2e',
+        environment: 'preview',
+      })
+      .expect(201);
+
+    const body = response.body as { status: string; url: string };
+    expect(body.status).toBe('succeeded');
+    expect(body.url).toContain('preview');
+  });
+
+  it('lists and deploys via the /deploy controller', async () => {
+    await request(app.getHttpServer())
+      .post('/deploy/production')
+      .send({ name: 'frontend', projectId: 'proj-front', environment: 'production' })
+      .expect(201);
+
+    const listResponse = await request(app.getHttpServer())
+      .get('/deploy')
+      .expect(200);
+
+    expect(Array.isArray(listResponse.body)).toBe(true);
+    expect((listResponse.body as unknown[]).length).toBeGreaterThan(0);
+  });
+
+  it('lists connectors and runs a health check', async () => {
+    const listResponse = await request(app.getHttpServer())
+      .get('/connectors')
+      .expect(200);
+
+    expect(Array.isArray(listResponse.body)).toBe(true);
+    const connectors = listResponse.body as Array<{ id: string; name: string }>;
+    expect(connectors.length).toBeGreaterThan(0);
+
+    const healthResponse = await request(app.getHttpServer())
+      .get('/connectors/health')
+      .expect(200);
+
+    const health = healthResponse.body as Array<{ id: string; success: boolean }>;
+    expect(health.length).toBe(connectors.length);
+  });
+
+  it('registers and lists a provider via the model-router CRUD endpoints', async () => {
+    const registerResponse = await request(app.getHttpServer())
+      .post('/model-router/providers')
+      .send({
+        name: 'Test Provider',
+        type: 'self-hosted',
+        baseUrl: 'https://api.test-provider.example.com/v1',
+        apiKey: 'test-api-key',
+        models: ['test-model-7b'],
+        priority: 5,
+      })
+      .expect(201);
+
+    const registered = registerResponse.body as { id: string; name: string };
+    expect(registered.name).toBe('Test Provider');
+
+    const listResponse = await request(app.getHttpServer())
+      .get('/model-router/providers')
+      .expect(200);
+
+    const providers = listResponse.body as Array<{ id: string }>;
+    expect(providers.some((p) => p.id === registered.id)).toBe(true);
+  });
 });

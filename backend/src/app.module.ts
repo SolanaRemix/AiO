@@ -5,6 +5,7 @@ import { ConfigModule } from '@nestjs/config';
 import { validateEnvironment } from './common/config/env.validation';
 import { ConnectorsModule } from './connectors/connectors.module';
 import { DatabaseModule } from './database/database.module';
+import { DeployModule } from './deploy/deploy.module';
 import { FilesModule } from './files/files.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -46,6 +47,7 @@ import { WorkflowsModule } from './workflows/workflows.module';
     KnowledgeEngineModule,
     OrchestratorModule,
     FilesModule,
+    DeployModule,
     WorkflowsModule,
     V1Module,
   ],

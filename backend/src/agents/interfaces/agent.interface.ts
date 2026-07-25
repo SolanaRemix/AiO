@@ -30,3 +30,25 @@ export interface AgentExecutionDetail extends AgentExecutionSummary {
   status: 'planned' | 'running' | 'completed';
   report: string;
 }
+
+export interface AgentLearnResult {
+  executionId: string;
+  learnedAt: string;
+  patterns: string[];
+  confidence: number;
+}
+
+export interface AgentSummarizeResult {
+  executionId: string;
+  summarizedAt: string;
+  summary: string;
+  keyPoints: string[];
+}
+
+export interface AgentValidateResult {
+  prompt: string;
+  validatedAt: string;
+  passed: boolean;
+  issues: string[];
+  recommendations: string[];
+}

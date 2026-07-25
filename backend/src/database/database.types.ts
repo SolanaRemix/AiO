@@ -123,6 +123,22 @@ export interface StoredFileRecord {
   createdAt: string;
 }
 
+export interface StoredDeployment {
+  id: string;
+  projectId?: string;
+  name: string;
+  environment: 'preview' | 'production';
+  status: 'queued' | 'building' | 'deploying' | 'succeeded' | 'failed' | 'rolled_back';
+  buildId?: string;
+  url?: string;
+  rollbackTargetId?: string;
+  envVars: Record<string, string>;
+  secrets: string[];
+  logs: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface StoredAgentExecution {
   id: string;
   prompt: string;
@@ -165,6 +181,7 @@ export interface DatabaseState {
   workflowExecutions: StoredWorkflowExecution[];
   files: StoredFileRecord[];
   agentExecutions: StoredAgentExecution[];
+  deployments: StoredDeployment[];
   auditLogs: StoredAuditLog[];
   requestMetrics: StoredRequestMetric[];
 }
@@ -179,6 +196,7 @@ export const DEFAULT_DATABASE_STATE: DatabaseState = {
   workflowExecutions: [],
   files: [],
   agentExecutions: [],
+  deployments: [],
   auditLogs: [],
   requestMetrics: [],
 };
