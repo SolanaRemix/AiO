@@ -44,20 +44,26 @@ describe('AgentsService', () => {
   });
 
   it('validates a valid prompt and passes', () => {
-    const result = service.validate('Build a scalable API for user authentication and authorization.');
+    const result = service.validate(
+      'Build a scalable API for user authentication and authorization.',
+    );
     expect(result.passed).toBe(true);
     expect(result.issues).toHaveLength(0);
   });
 
   it('executes a prompt and returns a completed execution record', async () => {
-    const result = await service.execute('Design a data pipeline for real-time analytics.');
+    const result = await service.execute(
+      'Design a data pipeline for real-time analytics.',
+    );
     expect(result.status).toBe('completed');
     expect(result.selectedAgents.length).toBeGreaterThan(0);
     expect(result.id).toBeDefined();
   });
 
   it('learns from a completed execution', async () => {
-    const execution = await service.execute('Implement security scanning for the CI pipeline.');
+    const execution = await service.execute(
+      'Implement security scanning for the CI pipeline.',
+    );
     const learned = await service.learn(execution.id!);
     expect(learned.executionId).toBe(execution.id);
     expect(learned.patterns.length).toBeGreaterThan(0);
@@ -65,7 +71,9 @@ describe('AgentsService', () => {
   });
 
   it('summarizes a completed execution', async () => {
-    const execution = await service.execute('Plan the frontend migration to React 19.');
+    const execution = await service.execute(
+      'Plan the frontend migration to React 19.',
+    );
     const summary = await service.summarize(execution.id!);
     expect(summary.executionId).toBe(execution.id);
     expect(summary.keyPoints.length).toBeGreaterThan(0);

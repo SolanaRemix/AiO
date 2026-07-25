@@ -75,9 +75,7 @@ export class DeployService {
     const deployments = await this.databaseService.list('deployments');
     const target = deployments.find((d) => d.id === deploymentId);
     if (target == null) {
-      throw new NotFoundException(
-        `Deployment ${deploymentId} was not found.`,
-      );
+      throw new NotFoundException(`Deployment ${deploymentId} was not found.`);
     }
 
     const timestamp = new Date().toISOString();
@@ -137,7 +135,10 @@ export class DeployService {
     return this.getDeployment(id);
   }
 
-  async addSecrets(id: string, secretNames: string[]): Promise<DeploymentDetail> {
+  async addSecrets(
+    id: string,
+    secretNames: string[],
+  ): Promise<DeploymentDetail> {
     await this.databaseService.mutate((draft) => {
       const deployment = draft.deployments.find((d) => d.id === id);
       if (deployment != null) {

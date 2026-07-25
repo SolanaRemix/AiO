@@ -92,7 +92,10 @@ export class ModelRouterController {
     if (existing == null) {
       throw new NotFoundException(`Provider ${id} was not found.`);
     }
-    return this.providerRegistryService.register({ ...existing, enabled: true });
+    return this.providerRegistryService.register({
+      ...existing,
+      enabled: true,
+    });
   }
 
   @Post('providers/:id/disable')
@@ -102,7 +105,10 @@ export class ModelRouterController {
     if (existing == null) {
       throw new NotFoundException(`Provider ${id} was not found.`);
     }
-    return this.providerRegistryService.register({ ...existing, enabled: false });
+    return this.providerRegistryService.register({
+      ...existing,
+      enabled: false,
+    });
   }
 
   @Get('health')

@@ -1,20 +1,124 @@
+export type UserPreferences = {
+  theme: 'dark' | 'light' | 'system';
+  timezone: string;
+  locale: string;
+};
+
+export type UserAiSettings = {
+  defaultModel: string;
+  memoryEnabled: boolean;
+  autonomyLevel: 'guided' | 'balanced' | 'autonomous';
+};
+
+export type UserNotificationSettings = {
+  emailAlerts: boolean;
+  pushAlerts: boolean;
+  securityAlerts: boolean;
+};
+
+export type UserSecuritySettings = {
+  mfaEnabled: boolean;
+  suspiciousActivityLock: boolean;
+};
+
 export interface StoredUser {
   id: string;
   email: string;
-  passwordEntry: string;
+  name: string;
+  avatar?: string;
+  passwordHash: string;
   roles: string[];
+  workspaceId: string;
+  emailVerified: boolean;
+  preferences: UserPreferences;
+  aiSettings: UserAiSettings;
+  notificationSettings: UserNotificationSettings;
+  securitySettings: UserSecuritySettings;
   createdAt: string;
   updatedAt: string;
 }
 
+export interface StoredSession {
+  id: string;
+  userId: string;
+  token: string;
+  expiresAt: string;
+  device: string;
+  ip: string;
+  csrfToken: string;
+  rememberDevice: boolean;
+  createdAt: string;
+  updatedAt: string;
+  revokedAt?: string;
+}
+
+export interface StoredOAuthAccount {
+  id: string;
+  userId: string;
+  provider: 'google' | 'github' | 'microsoft' | 'enterprise-sso';
+  providerAccountId: string;
+  accessToken: string;
+  refreshToken?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type ProjectLifecycleState =
+  | 'Planning'
+  | 'Architecture'
+  | 'Development'
+  | 'Testing'
+  | 'Security Review'
+  | 'Deployment Ready'
+  | 'Production'
+  | 'Monitoring';
+
 export interface StoredProject {
   id: string;
+  ownerId?: string;
+  workspaceId?: string;
   name: string;
   description: string;
   repositoryUrl?: string;
   status: 'active' | 'archived';
+  lifecycleState: ProjectLifecycleState;
+  completionPercentage: number;
+  pipelineStage: string;
+  deploymentStatus:
+    'not_configured' | 'queued' | 'in_progress' | 'succeeded' | 'failed';
+  gitStatus: 'clean' | 'changes_pending' | 'conflict' | 'disconnected';
+  activeAgents: number;
+  alerts: number;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface StoredProjectAlert {
+  id: string;
+  projectId: string;
+  type:
+    | 'build_failure'
+    | 'security_issue'
+    | 'failed_agent'
+    | 'deployment_problem'
+    | 'merge_conflict'
+    | 'missing_configuration'
+    | 'performance_issue';
+  severity: 'low' | 'medium' | 'high';
+  message: string;
+  status: 'open' | 'resolved';
+  createdAt: string;
+  resolvedAt?: string;
+}
+
+export interface StoredProjectActivity {
+  id: string;
+  projectId: string;
+  actor: string;
+  action: string;
+  category: 'agent' | 'commit' | 'deployment' | 'workflow' | 'user' | 'system';
+  detail: string;
+  createdAt: string;
 }
 
 export interface StoredMemoryRecord {
@@ -128,7 +232,13 @@ export interface StoredDeployment {
   projectId?: string;
   name: string;
   environment: 'preview' | 'production';
-  status: 'queued' | 'building' | 'deploying' | 'succeeded' | 'failed' | 'rolled_back';
+  status:
+    | 'queued'
+    | 'building'
+    | 'deploying'
+    | 'succeeded'
+    | 'failed'
+    | 'rolled_back';
   buildId?: string;
   url?: string;
   rollbackTargetId?: string;
@@ -149,6 +259,42 @@ export interface StoredAgentExecution {
   validations: string[];
   createdAt: string;
   updatedAt: string;
+}
+
+export interface StoredGitConnection {
+  id: string;
+  userId: string;
+  provider: 'github' | 'gitlab' | 'bitbucket';
+  encryptedCredential: string;
+  scope: string[];
+  expiresAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredRepository {
+  id: string;
+  projectId: string;
+  provider: 'github' | 'gitlab' | 'bitbucket';
+  name: string;
+  defaultBranch: string;
+  branches: string[];
+  connected: boolean;
+  lastSyncAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredGitCommit {
+  id: string;
+  repositoryId: string;
+  projectId: string;
+  branch: string;
+  message: string;
+  agent: string;
+  validation: 'passed' | 'pending' | 'failed';
+  kind: 'manual' | 'milestone';
+  createdAt: string;
 }
 
 export interface StoredAuditLog {
@@ -173,7 +319,11 @@ export interface StoredRequestMetric {
 
 export interface DatabaseState {
   users: StoredUser[];
+  sessions: StoredSession[];
+  oauthAccounts: StoredOAuthAccount[];
   projects: StoredProject[];
+  projectAlerts: StoredProjectAlert[];
+  projectActivities: StoredProjectActivity[];
   memoryRecords: StoredMemoryRecord[];
   knowledgeDocuments: StoredKnowledgeDocument[];
   providers: StoredProviderRecord[];
@@ -182,13 +332,20 @@ export interface DatabaseState {
   files: StoredFileRecord[];
   agentExecutions: StoredAgentExecution[];
   deployments: StoredDeployment[];
+  gitConnections: StoredGitConnection[];
+  repositories: StoredRepository[];
+  gitCommits: StoredGitCommit[];
   auditLogs: StoredAuditLog[];
   requestMetrics: StoredRequestMetric[];
 }
 
 export const DEFAULT_DATABASE_STATE: DatabaseState = {
   users: [],
+  sessions: [],
+  oauthAccounts: [],
   projects: [],
+  projectAlerts: [],
+  projectActivities: [],
   memoryRecords: [],
   knowledgeDocuments: [],
   providers: [],
@@ -197,6 +354,9 @@ export const DEFAULT_DATABASE_STATE: DatabaseState = {
   files: [],
   agentExecutions: [],
   deployments: [],
+  gitConnections: [],
+  repositories: [],
+  gitCommits: [],
   auditLogs: [],
   requestMetrics: [],
 };
