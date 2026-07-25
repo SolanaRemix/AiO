@@ -20,7 +20,9 @@ export class NotificationsService {
 
   async listAlerts(projectId?: string) {
     const alerts = await this.databaseService.list('projectAlerts');
-    return alerts.filter((entry) => (projectId == null ? true : entry.projectId === projectId));
+    return alerts.filter((entry) =>
+      projectId == null ? true : entry.projectId === projectId,
+    );
   }
 
   async resolveAlert(id: string) {
@@ -32,10 +34,13 @@ export class NotificationsService {
       alert.status = 'resolved';
       alert.resolvedAt = new Date().toISOString();
 
-      const project = draft.projects.find((entry) => entry.id === alert.projectId);
+      const project = draft.projects.find(
+        (entry) => entry.id === alert.projectId,
+      );
       if (project != null) {
         project.alerts = draft.projectAlerts.filter(
-          (entry) => entry.projectId === alert.projectId && entry.status === 'open',
+          (entry) =>
+            entry.projectId === alert.projectId && entry.status === 'open',
         ).length;
       }
 

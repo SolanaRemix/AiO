@@ -82,7 +82,8 @@ export interface StoredProject {
   lifecycleState: ProjectLifecycleState;
   completionPercentage: number;
   pipelineStage: string;
-  deploymentStatus: 'not_configured' | 'queued' | 'in_progress' | 'succeeded' | 'failed';
+  deploymentStatus:
+    'not_configured' | 'queued' | 'in_progress' | 'succeeded' | 'failed';
   gitStatus: 'clean' | 'changes_pending' | 'conflict' | 'disconnected';
   activeAgents: number;
   alerts: number;
@@ -229,7 +230,13 @@ export interface StoredDeployment {
   projectId?: string;
   name: string;
   environment: 'preview' | 'production';
-  status: 'queued' | 'building' | 'deploying' | 'succeeded' | 'failed' | 'rolled_back';
+  status:
+    | 'queued'
+    | 'building'
+    | 'deploying'
+    | 'succeeded'
+    | 'failed'
+    | 'rolled_back';
   buildId?: string;
   url?: string;
   rollbackTargetId?: string;

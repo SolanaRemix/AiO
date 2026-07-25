@@ -1,4 +1,8 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
 import { type StoredUser } from '../database/database.types';
 import { MonitoringService } from '../monitoring/monitoring.service';
@@ -21,11 +25,18 @@ export class ProfileService {
     return user;
   }
 
-  async updateProfile(userId: string, dto: UpdateProfileDto): Promise<StoredUser> {
+  async updateProfile(
+    userId: string,
+    dto: UpdateProfileDto,
+  ): Promise<StoredUser> {
     const users = await this.databaseService.list('users');
-    const duplicate = users.find((entry) => entry.email === dto.email && entry.id !== userId);
+    const duplicate = users.find(
+      (entry) => entry.email === dto.email && entry.id !== userId,
+    );
     if (duplicate != null) {
-      throw new ConflictException('Email is already assigned to another account.');
+      throw new ConflictException(
+        'Email is already assigned to another account.',
+      );
     }
 
     const updated = await this.databaseService.mutate((draft) => {
@@ -52,7 +63,10 @@ export class ProfileService {
     return updated;
   }
 
-  async updatePreferences(userId: string, dto: UpdatePreferencesDto): Promise<StoredUser> {
+  async updatePreferences(
+    userId: string,
+    dto: UpdatePreferencesDto,
+  ): Promise<StoredUser> {
     const updated = await this.databaseService.mutate((draft) => {
       const user = draft.users.find((entry) => entry.id === userId);
       if (user == null) {
@@ -63,17 +77,25 @@ export class ProfileService {
       if (dto.timezone != null) user.preferences.timezone = dto.timezone;
       if (dto.locale != null) user.preferences.locale = dto.locale;
 
-      if (dto.defaultModel != null) user.aiSettings.defaultModel = dto.defaultModel;
-      if (dto.memoryEnabled != null) user.aiSettings.memoryEnabled = dto.memoryEnabled;
-      if (dto.autonomyLevel != null) user.aiSettings.autonomyLevel = dto.autonomyLevel;
+      if (dto.defaultModel != null)
+        user.aiSettings.defaultModel = dto.defaultModel;
+      if (dto.memoryEnabled != null)
+        user.aiSettings.memoryEnabled = dto.memoryEnabled;
+      if (dto.autonomyLevel != null)
+        user.aiSettings.autonomyLevel = dto.autonomyLevel;
 
-      if (dto.emailAlerts != null) user.notificationSettings.emailAlerts = dto.emailAlerts;
-      if (dto.pushAlerts != null) user.notificationSettings.pushAlerts = dto.pushAlerts;
-      if (dto.securityAlerts != null) user.notificationSettings.securityAlerts = dto.securityAlerts;
+      if (dto.emailAlerts != null)
+        user.notificationSettings.emailAlerts = dto.emailAlerts;
+      if (dto.pushAlerts != null)
+        user.notificationSettings.pushAlerts = dto.pushAlerts;
+      if (dto.securityAlerts != null)
+        user.notificationSettings.securityAlerts = dto.securityAlerts;
 
-      if (dto.mfaEnabled != null) user.securitySettings.mfaEnabled = dto.mfaEnabled;
+      if (dto.mfaEnabled != null)
+        user.securitySettings.mfaEnabled = dto.mfaEnabled;
       if (dto.suspiciousActivityLock != null) {
-        user.securitySettings.suspiciousActivityLock = dto.suspiciousActivityLock;
+        user.securitySettings.suspiciousActivityLock =
+          dto.suspiciousActivityLock;
       }
 
       user.updatedAt = new Date().toISOString();

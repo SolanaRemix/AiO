@@ -44,14 +44,14 @@ describe('ConnectorsService', () => {
 
   it('syncs a known connector', async () => {
     const connectors = service.list();
-    const first = connectors[0]!;
+    const first = connectors[0];
     const result = await service.sync(first.id);
     expect(result.success).toBeDefined();
   });
 
   it('searches via a known connector', async () => {
     const connectors = service.list();
-    const first = connectors[0]!;
+    const first = connectors[0];
     const result = await service.search(first.id, 'README');
     expect(result.success).toBeDefined();
   });

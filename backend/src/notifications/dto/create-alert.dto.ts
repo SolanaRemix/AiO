@@ -6,7 +6,17 @@ export class CreateAlertDto {
   @IsString()
   projectId!: string;
 
-  @ApiProperty({ enum: ['build_failure', 'security_issue', 'failed_agent', 'deployment_problem', 'merge_conflict', 'missing_configuration', 'performance_issue'] })
+  @ApiProperty({
+    enum: [
+      'build_failure',
+      'security_issue',
+      'failed_agent',
+      'deployment_problem',
+      'merge_conflict',
+      'missing_configuration',
+      'performance_issue',
+    ],
+  })
   @IsIn([
     'build_failure',
     'security_issue',

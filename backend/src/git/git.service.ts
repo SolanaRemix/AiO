@@ -1,6 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { createCipheriv, createHash, randomBytes, randomUUID } from 'node:crypto';
+import {
+  createCipheriv,
+  createHash,
+  randomBytes,
+  randomUUID,
+} from 'node:crypto';
 import { DatabaseService } from '../database/database.service';
 import {
   type StoredGitCommit,
@@ -25,7 +30,10 @@ export class GitService {
     private readonly providerAdapters: GitProviderAdapters,
   ) {}
 
-  async connect(userId: string, dto: ConnectGitDto): Promise<StoredGitConnection> {
+  async connect(
+    userId: string,
+    dto: ConnectGitDto,
+  ): Promise<StoredGitConnection> {
     const now = new Date().toISOString();
     const connection: StoredGitConnection = {
       id: randomUUID(),
@@ -61,7 +69,9 @@ export class GitService {
       (entry) => entry.id === dto.projectId,
     );
     if (project == null) {
-      throw new NotFoundException('Project was not found for repository initialization.');
+      throw new NotFoundException(
+        'Project was not found for repository initialization.',
+      );
     }
 
     const now = new Date().toISOString();
@@ -73,7 +83,7 @@ export class GitService {
       defaultBranch: dto.defaultBranch ?? 'main',
       branches:
         dto.branches?.length != null && (dto.branches?.length ?? 0) > 0
-          ? dto.branches!
+          ? dto.branches
           : [dto.defaultBranch ?? 'main'],
       connected: true,
       lastSyncAt: now,
@@ -87,7 +97,9 @@ export class GitService {
       );
       draft.repositories.unshift(repository);
 
-      const mutableProject = draft.projects.find((entry) => entry.id === dto.projectId);
+      const mutableProject = draft.projects.find(
+        (entry) => entry.id === dto.projectId,
+      );
       if (mutableProject != null) {
         mutableProject.repositoryUrl = `${dto.provider}://${dto.repositoryName}`;
         mutableProject.gitStatus = 'clean';
@@ -127,7 +139,9 @@ export class GitService {
     await this.databaseService.mutate((draft) => {
       draft.gitCommits.unshift(commit);
 
-      const project = draft.projects.find((entry) => entry.id === dto.projectId);
+      const project = draft.projects.find(
+        (entry) => entry.id === dto.projectId,
+      );
       if (project != null) {
         project.gitStatus = 'changes_pending';
         project.updatedAt = now;
@@ -148,14 +162,19 @@ export class GitService {
     return commit;
   }
 
-  async push(projectId: string, branch = 'main'): Promise<{ status: string; detail: string }> {
+  async push(
+    projectId: string,
+    branch = 'main',
+  ): Promise<{ status: string; detail: string }> {
     const repository = await this.getRepositoryForProject(projectId);
     const detail = this.providerAdapters
       .get(repository.provider)
       .sync('push', repository.name, branch);
 
     await this.databaseService.mutate((draft) => {
-      const repo = draft.repositories.find((entry) => entry.id === repository.id);
+      const repo = draft.repositories.find(
+        (entry) => entry.id === repository.id,
+      );
       if (repo != null) {
         repo.lastSyncAt = new Date().toISOString();
         repo.updatedAt = repo.lastSyncAt;
@@ -181,7 +200,10 @@ export class GitService {
     return { status: 'ok', detail };
   }
 
-  async pull(projectId: string, branch = 'main'): Promise<{ status: string; detail: string }> {
+  async pull(
+    projectId: string,
+    branch = 'main',
+  ): Promise<{ status: string; detail: string }> {
     const repository = await this.getRepositoryForProject(projectId);
     const detail = this.providerAdapters
       .get(repository.provider)
@@ -189,7 +211,9 @@ export class GitService {
 
     const alertChance = Math.random() < 0.15;
     await this.databaseService.mutate((draft) => {
-      const repo = draft.repositories.find((entry) => entry.id === repository.id);
+      const repo = draft.repositories.find(
+        (entry) => entry.id === repository.id,
+      );
       if (repo != null) {
         repo.lastSyncAt = new Date().toISOString();
         repo.updatedAt = repo.lastSyncAt;
@@ -235,25 +259,33 @@ export class GitService {
     if (projectId == null) {
       return commits.slice(0, 200);
     }
-    return commits.filter((entry) => entry.projectId === projectId).slice(0, 200);
+    return commits
+      .filter((entry) => entry.projectId === projectId)
+      .slice(0, 200);
   }
 
   listProviders(): GitProvider[] {
     return this.providerAdapters.list();
   }
 
-  private async getRepositoryForProject(projectId: string): Promise<StoredRepository> {
+  private async getRepositoryForProject(
+    projectId: string,
+  ): Promise<StoredRepository> {
     const repository = (await this.databaseService.list('repositories')).find(
       (entry) => entry.projectId === projectId,
     );
     if (repository == null) {
-      throw new NotFoundException('Repository is not initialized for this project.');
+      throw new NotFoundException(
+        'Repository is not initialized for this project.',
+      );
     }
     return repository;
   }
 
   private encrypt(secretValue: string): string {
-    const secret = this.configService.get<string>('GIT_CREDENTIAL_SECRET') ?? 'aio-git-secret';
+    const secret =
+      this.configService.get<string>('GIT_CREDENTIAL_SECRET') ??
+      'aio-git-secret';
     const key = createHash('sha256').update(secret).digest();
     const iv = randomBytes(12);
     const cipher = createCipheriv('aes-256-gcm', key, iv);

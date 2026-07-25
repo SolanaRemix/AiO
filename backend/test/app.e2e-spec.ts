@@ -47,7 +47,8 @@ describe('AppController (e2e)', () => {
       })
       .expect(201);
     accessToken = (loginResponse.body as { accessToken: string }).accessToken;
-    refreshToken = (loginResponse.body as { refreshToken: string }).refreshToken;
+    refreshToken = (loginResponse.body as { refreshToken: string })
+      .refreshToken;
     csrfToken = (loginResponse.body as { csrfToken: string }).csrfToken;
   });
 
@@ -96,7 +97,9 @@ describe('AppController (e2e)', () => {
       .send({ refreshToken: body.refreshToken })
       .expect(201);
 
-    expect((refreshResponse.body as { accessToken: string }).accessToken).toBeDefined();
+    expect(
+      (refreshResponse.body as { accessToken: string }).accessToken,
+    ).toBeDefined();
   });
 
   it('supports OAuth login and session retrieval', async () => {
@@ -111,13 +114,16 @@ describe('AppController (e2e)', () => {
       })
       .expect(201);
 
-    const oauthToken = (oauthResponse.body as { accessToken: string }).accessToken;
+    const oauthToken = (oauthResponse.body as { accessToken: string })
+      .accessToken;
     const sessionResponse = await request(app.getHttpServer())
       .get('/api/auth/session')
       .set('Authorization', 'Bearer '.concat(oauthToken))
       .expect(200);
 
-    expect((sessionResponse.body as { email: string }).email).toBe('oauth.user@aio.local');
+    expect((sessionResponse.body as { email: string }).email).toBe(
+      'oauth.user@aio.local',
+    );
   });
 
   it('logs out a session using csrf protection', async () => {
@@ -257,7 +263,9 @@ describe('AppController (e2e)', () => {
       .set('Authorization', 'Bearer '.concat(accessToken))
       .expect(200);
 
-    expect((historyResponse.body as Array<{ projectId: string }>).length).toBeGreaterThan(0);
+    expect(
+      (historyResponse.body as Array<{ projectId: string }>).length,
+    ).toBeGreaterThan(0);
   });
 
   it('runs workflows through the authenticated /v1 gateway', async () => {
@@ -280,7 +288,9 @@ describe('AppController (e2e)', () => {
   it('validates a prompt via the agents SDK endpoint', async () => {
     const response = await request(app.getHttpServer())
       .post('/agents/validate')
-      .send({ prompt: 'Build a secure authentication service for enterprise users.' })
+      .send({
+        prompt: 'Build a secure authentication service for enterprise users.',
+      })
       .expect(201);
 
     const body = response.body as { passed: boolean; issues: string[] };
@@ -310,13 +320,17 @@ describe('AppController (e2e)', () => {
       .post(`/agents/${execution.id}/learn`)
       .expect(201);
 
-    expect((learnResponse.body as { executionId: string }).executionId).toBe(execution.id);
+    expect((learnResponse.body as { executionId: string }).executionId).toBe(
+      execution.id,
+    );
 
     const summarizeResponse = await request(app.getHttpServer())
       .post(`/agents/${execution.id}/summarize`)
       .expect(201);
 
-    expect((summarizeResponse.body as { executionId: string }).executionId).toBe(execution.id);
+    expect(
+      (summarizeResponse.body as { executionId: string }).executionId,
+    ).toBe(execution.id);
   });
 
   it('builds and deploys through /v1/deploy', async () => {
@@ -338,7 +352,11 @@ describe('AppController (e2e)', () => {
   it('lists and deploys via the /deploy controller', async () => {
     await request(app.getHttpServer())
       .post('/deploy/production')
-      .send({ name: 'frontend', projectId: 'proj-front', environment: 'production' })
+      .send({
+        name: 'frontend',
+        projectId: 'proj-front',
+        environment: 'production',
+      })
       .expect(201);
 
     const listResponse = await request(app.getHttpServer())
@@ -362,7 +380,10 @@ describe('AppController (e2e)', () => {
       .get('/connectors/health')
       .expect(200);
 
-    const health = healthResponse.body as Array<{ id: string; success: boolean }>;
+    const health = healthResponse.body as Array<{
+      id: string;
+      success: boolean;
+    }>;
     expect(health.length).toBe(connectors.length);
   });
 

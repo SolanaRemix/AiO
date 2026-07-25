@@ -1,5 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { type GitProvider, type GitProviderAdapter } from './git-provider-adapter.interface';
+import {
+  type GitProvider,
+  type GitProviderAdapter,
+} from './git-provider-adapter.interface';
 
 class DefaultProviderAdapter implements GitProviderAdapter {
   constructor(readonly provider: GitProvider) {}

@@ -21,7 +21,10 @@ export class CreateCommitDto {
   @IsString()
   agent?: string;
 
-  @ApiPropertyOptional({ enum: ['passed', 'pending', 'failed'], default: 'pending' })
+  @ApiPropertyOptional({
+    enum: ['passed', 'pending', 'failed'],
+    default: 'pending',
+  })
   @IsOptional()
   @IsIn(['passed', 'pending', 'failed'])
   validation?: 'passed' | 'pending' | 'failed';

@@ -54,19 +54,13 @@ export class DeployController {
 
   @Patch(':id/env')
   @ApiOperation({ summary: 'Set environment variables for a deployment' })
-  setEnvVars(
-    @Param('id') id: string,
-    @Body() envVars: Record<string, string>,
-  ) {
+  setEnvVars(@Param('id') id: string, @Body() envVars: Record<string, string>) {
     return this.deployService.setEnvVars(id, envVars);
   }
 
   @Patch(':id/secrets')
   @ApiOperation({ summary: 'Add secrets to a deployment' })
-  addSecrets(
-    @Param('id') id: string,
-    @Body() body: { secrets: string[] },
-  ) {
+  addSecrets(@Param('id') id: string, @Body() body: { secrets: string[] }) {
     return this.deployService.addSecrets(id, body.secrets);
   }
 }

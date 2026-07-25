@@ -92,12 +92,14 @@ export class ProjectsService {
       if (dto.description != null) project.description = dto.description;
       if (dto.repositoryUrl != null) project.repositoryUrl = dto.repositoryUrl;
       if (dto.status != null) project.status = dto.status;
-      if (dto.lifecycleState != null) project.lifecycleState = dto.lifecycleState;
+      if (dto.lifecycleState != null)
+        project.lifecycleState = dto.lifecycleState;
       if (dto.completionPercentage != null) {
         project.completionPercentage = dto.completionPercentage;
       }
       if (dto.pipelineStage != null) project.pipelineStage = dto.pipelineStage;
-      if (dto.deploymentStatus != null) project.deploymentStatus = dto.deploymentStatus;
+      if (dto.deploymentStatus != null)
+        project.deploymentStatus = dto.deploymentStatus;
       if (dto.gitStatus != null) project.gitStatus = dto.gitStatus;
       if (dto.activeAgents != null) project.activeAgents = dto.activeAgents;
       project.updatedAt = new Date().toISOString();
@@ -107,7 +109,9 @@ export class ProjectsService {
           ? MILESTONE_MESSAGES[dto.lifecycleState]
           : undefined;
       if (milestone != null) {
-        const repository = draft.repositories.find((repo) => repo.projectId === project.id);
+        const repository = draft.repositories.find(
+          (repo) => repo.projectId === project.id,
+        );
         if (repository != null) {
           const commit: StoredGitCommit = {
             id: randomUUID(),
@@ -144,7 +148,10 @@ export class ProjectsService {
       });
     }
 
-    if (existing.deploymentStatus !== 'failed' && updated.deploymentStatus === 'failed') {
+    if (
+      existing.deploymentStatus !== 'failed' &&
+      updated.deploymentStatus === 'failed'
+    ) {
       await this.createAlert(id, {
         type: 'deployment_problem',
         severity: 'high',
@@ -236,7 +243,8 @@ export class ProjectsService {
         },
         {
           action: 'Import Project',
-          description: 'Import from Git repository, workspace, or documentation',
+          description:
+            'Import from Git repository, workspace, or documentation',
         },
       ],
     };

@@ -70,8 +70,16 @@ describe('DeployService', () => {
   });
 
   it('lists deployments and filters by projectId', async () => {
-    await service.deploy({ name: 'alpha', projectId: 'proj-a', environment: 'preview' });
-    await service.deploy({ name: 'beta', projectId: 'proj-b', environment: 'preview' });
+    await service.deploy({
+      name: 'alpha',
+      projectId: 'proj-a',
+      environment: 'preview',
+    });
+    await service.deploy({
+      name: 'beta',
+      projectId: 'proj-b',
+      environment: 'preview',
+    });
 
     const all = await service.listDeployments();
     expect(all.length).toBe(2);

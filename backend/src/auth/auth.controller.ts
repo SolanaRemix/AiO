@@ -43,7 +43,9 @@ export class AuthController {
   }
 
   @Post('api/auth/register')
-  @ApiOperation({ summary: 'Register enterprise user and initialize workspace' })
+  @ApiOperation({
+    summary: 'Register enterprise user and initialize workspace',
+  })
   register(@Body() dto: RegisterDto, @Ip() ip: string) {
     return this.authService.register(dto, {
       ip,
@@ -54,7 +56,11 @@ export class AuthController {
 
   @Post('api/auth/login')
   @ApiOperation({ summary: 'Login with email and password' })
-  enterpriseLogin(@Body() dto: LoginDto, @Ip() ip: string, @Req() request: Request) {
+  enterpriseLogin(
+    @Body() dto: LoginDto,
+    @Ip() ip: string,
+    @Req() request: Request,
+  ) {
     return this.authService.login(dto, {
       ip,
       device: request.get('user-agent') ?? 'unknown-device',
@@ -72,13 +78,17 @@ export class AuthController {
   }
 
   @Get('api/auth/oauth/providers')
-  @ApiOperation({ summary: 'List OAuth providers supported by AiO enterprise identity' })
+  @ApiOperation({
+    summary: 'List OAuth providers supported by AiO enterprise identity',
+  })
   oauthProviders() {
     return { providers: this.authService.listOauthProviders() };
   }
 
   @Post('api/auth/refresh')
-  @ApiOperation({ summary: 'Rotate refresh token and issue a new access token' })
+  @ApiOperation({
+    summary: 'Rotate refresh token and issue a new access token',
+  })
   refresh(@Body() dto: RefreshDto, @Ip() ip: string, @Req() request: Request) {
     return this.authService.refresh(dto.refreshToken, {
       ip,

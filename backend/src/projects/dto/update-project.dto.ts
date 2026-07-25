@@ -1,5 +1,15 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsIn, IsInt, IsOptional, IsString, IsUrl, Max, MaxLength, Min, MinLength } from 'class-validator';
+import {
+  IsIn,
+  IsInt,
+  IsOptional,
+  IsString,
+  IsUrl,
+  Max,
+  MaxLength,
+  Min,
+  MinLength,
+} from 'class-validator';
 
 const lifecycleStates = [
   'Planning',
@@ -54,12 +64,17 @@ export class UpdateProjectDto {
   @IsString()
   pipelineStage?: string;
 
-  @ApiPropertyOptional({ enum: ['not_configured', 'queued', 'in_progress', 'succeeded', 'failed'] })
+  @ApiPropertyOptional({
+    enum: ['not_configured', 'queued', 'in_progress', 'succeeded', 'failed'],
+  })
   @IsOptional()
   @IsIn(['not_configured', 'queued', 'in_progress', 'succeeded', 'failed'])
-  deploymentStatus?: 'not_configured' | 'queued' | 'in_progress' | 'succeeded' | 'failed';
+  deploymentStatus?:
+    'not_configured' | 'queued' | 'in_progress' | 'succeeded' | 'failed';
 
-  @ApiPropertyOptional({ enum: ['clean', 'changes_pending', 'conflict', 'disconnected'] })
+  @ApiPropertyOptional({
+    enum: ['clean', 'changes_pending', 'conflict', 'disconnected'],
+  })
   @IsOptional()
   @IsIn(['clean', 'changes_pending', 'conflict', 'disconnected'])
   gitStatus?: 'clean' | 'changes_pending' | 'conflict' | 'disconnected';

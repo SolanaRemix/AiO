@@ -1,11 +1,6 @@
 export type DeploymentEnvironment = 'preview' | 'production';
 export type DeploymentStatus =
-  | 'queued'
-  | 'building'
-  | 'deploying'
-  | 'succeeded'
-  | 'failed'
-  | 'rolled_back';
+  'queued' | 'building' | 'deploying' | 'succeeded' | 'failed' | 'rolled_back';
 
 export interface DeploymentSummary {
   id: string;

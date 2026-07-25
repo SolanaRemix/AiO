@@ -86,7 +86,11 @@ function hashToken(token: string): string {
   return createHash('sha256').update(token).digest('hex');
 }
 
-function buildDefaultUser(email: string, name: string, password: string): StoredUser {
+function buildDefaultUser(
+  email: string,
+  name: string,
+  password: string,
+): StoredUser {
   const salt = randomBytes(16).toString('hex');
   const timestamp = new Date().toISOString();
   return {
@@ -168,7 +172,8 @@ export class AuthService implements OnModuleInit {
     const adminEmail =
       this.configService.get<string>('ADMIN_EMAIL') ?? DEFAULT_ADMIN_EMAIL;
     const adminPassword =
-      this.configService.get<string>('ADMIN_PASSWORD') ?? DEFAULT_ADMIN_PASSWORD;
+      this.configService.get<string>('ADMIN_PASSWORD') ??
+      DEFAULT_ADMIN_PASSWORD;
 
     await this.databaseService.mutate((draft) => {
       const existing = draft.users.find((user) => user.email === adminEmail);
@@ -303,7 +308,7 @@ export class AuthService implements OnModuleInit {
       if (account == null) {
         const oauthAccount: StoredOAuthAccount = {
           id: randomUUID(),
-          userId: user!.id,
+          userId: user.id,
           provider: identity.provider,
           providerAccountId: identity.providerAccountId,
           accessToken: identity.accessToken,
@@ -356,7 +361,10 @@ export class AuthService implements OnModuleInit {
       throw new UnauthorizedException('Session not found.');
     }
 
-    if (session.revokedAt != null || new Date(session.expiresAt).getTime() < Date.now()) {
+    if (
+      session.revokedAt != null ||
+      new Date(session.expiresAt).getTime() < Date.now()
+    ) {
       throw new UnauthorizedException('Session expired or revoked.');
     }
 
@@ -400,7 +408,9 @@ export class AuthService implements OnModuleInit {
   ): Promise<{ loggedOut: true }> {
     const sessionId =
       payload.sessionId ??
-      (refreshToken != null ? this.decodeSessionIdFromRefreshToken(refreshToken) : undefined);
+      (refreshToken != null
+        ? this.decodeSessionIdFromRefreshToken(refreshToken)
+        : undefined);
     if (sessionId == null) {
       throw new BadRequestException('Session context is required to logout.');
     }
@@ -510,7 +520,9 @@ export class AuthService implements OnModuleInit {
       expiresIn: refreshExpiresIn,
     });
 
-    const expiresAt = new Date(Date.now() + refreshExpiresIn * 1_000).toISOString();
+    const expiresAt = new Date(
+      Date.now() + refreshExpiresIn * 1_000,
+    ).toISOString();
     const session: StoredSession = {
       id: sessionId,
       userId: user.id,
@@ -583,7 +595,9 @@ export class AuthService implements OnModuleInit {
       },
       { expiresIn: refreshExpiresIn },
     );
-    const expiresAt = new Date(Date.now() + refreshExpiresIn * 1_000).toISOString();
+    const expiresAt = new Date(
+      Date.now() + refreshExpiresIn * 1_000,
+    ).toISOString();
     const csrfToken = randomBytes(24).toString('hex');
 
     await this.databaseService.mutate((draft) => {
@@ -636,9 +650,11 @@ export class AuthService implements OnModuleInit {
   }
 
   private decodeSessionIdFromRefreshToken(token: string): string | undefined {
-    const payload = this.jwtService.decode(token) as
-      | (JwtPayload & { sessionId?: string })
-      | null;
-    return payload?.sessionId;
+    const payload: unknown = this.jwtService.decode(token);
+    if (payload == null || typeof payload !== 'object') {
+      return undefined;
+    }
+    const sessionId = (payload as { sessionId?: unknown }).sessionId;
+    return typeof sessionId === 'string' ? sessionId : undefined;
   }
 }

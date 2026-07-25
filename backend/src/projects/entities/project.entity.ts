@@ -28,11 +28,7 @@ export class ProjectEntity {
 
   @ApiProperty({ example: 'not_configured' })
   deploymentStatus!:
-    | 'not_configured'
-    | 'queued'
-    | 'in_progress'
-    | 'succeeded'
-    | 'failed';
+    'not_configured' | 'queued' | 'in_progress' | 'succeeded' | 'failed';
 
   @ApiProperty({ example: 'clean' })
   gitStatus!: 'clean' | 'changes_pending' | 'conflict' | 'disconnected';

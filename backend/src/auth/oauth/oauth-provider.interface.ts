@@ -1,4 +1,5 @@
-export type OAuthProviderName = 'google' | 'github' | 'microsoft' | 'enterprise-sso';
+export type OAuthProviderName =
+  'google' | 'github' | 'microsoft' | 'enterprise-sso';
 
 export type OAuthIdentity = {
   provider: OAuthProviderName;
